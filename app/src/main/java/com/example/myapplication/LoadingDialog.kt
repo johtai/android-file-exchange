@@ -65,8 +65,8 @@ fun LoadingDialog(isFinished: Boolean, onDismiss: () -> Unit) {
                     Text("Загрузка завершена!")
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Всего пакетов: ${sendingData.allPackeges}")
-                Text("Количество отправленных: ${sendingData.sendingPackeges}")
+                Text("Всего пакетов: ${sendingData.allPackages}")
+                Text("Количество отправленных: ${sendingData.sendingPackages}")
                 Text("Повторно запрошено: ${sendingData.requestedPackages}")
             }
         }

@@ -12,15 +12,15 @@ import java.lang.Math.random
 
 object sendingData {
     lateinit var byteArray: ByteArray
-    var allPackeges by mutableIntStateOf(1)
-    var sendingPackeges by mutableIntStateOf(0)
+    var allPackages by mutableIntStateOf(1)
+    var sendingPackages by mutableIntStateOf(0)
     var requestedPackages by mutableIntStateOf(0)
 
     fun setData (context: Context, uri: Uri) {
         try {
             byteArray = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }!!
-            allPackeges = 1
-            sendingPackeges = 0
+            allPackages = 1
+            sendingPackages = 0
             requestedPackages = 0
         } catch (e: Exception){
             println(e.message)
@@ -28,12 +28,12 @@ object sendingData {
     }
 
     suspend fun sendData(){
-        sendingPackeges = 0
+        sendingPackages = 0
         val MaxCountPackages: Int = 5
-        allPackeges = 1 + (random() * MaxCountPackages).toInt()
-        while(sendingPackeges < allPackeges){
+        allPackages = 1 + (random() * MaxCountPackages).toInt()
+        while(sendingPackages < allPackages){
             delay(1000)
-            sendingPackeges++
+            sendingPackages++
         }
 
     }

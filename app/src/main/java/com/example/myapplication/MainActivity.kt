@@ -45,8 +45,6 @@ import androidx.compose.ui.unit.dp
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import kotlinx.coroutines.launch
 
-var sendingData:SendingData = SendingData()
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,7 +77,7 @@ fun FilePickerScreen() {
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
         onResult = { uri -> selectedFileUri = uri
-            sendingData = SendingData(context, selectedFileUri!!)      //выбирает любой файл из системы и записывает его в data
+            sendingData.setData (context, selectedFileUri!!) //выбирает любой файл из системы и записывает его в data
         }
     )
 
