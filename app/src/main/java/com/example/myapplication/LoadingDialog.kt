@@ -1,6 +1,3 @@
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -11,7 +8,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.myapplication.sendingData
 import com.example.myapplication.ui.theme.MyApplicationTheme
-import kotlinx.coroutines.delay
 
 @Composable
 fun LoadingDialog(onDismiss: () -> Unit) {
@@ -69,8 +65,8 @@ fun LoadingDialog(isFinished: Boolean, onDismiss: () -> Unit) {
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Text("Размер файла в байтах: ${sendingData.byteArray.size}")
-                Text("Всего пакетов: ${sendingData.allPackeges}")
-                Text("Количество отправленных: ${sendingData.sendingPackeges}")
+                Text("Всего пакетов: ${sendingData.allPackages}")
+                Text("Количество отправленных: ${sendingData.sendingPackages}")
                 Text("Повторно запрошено: ${sendingData.requestedPackages}")
             }
         }
