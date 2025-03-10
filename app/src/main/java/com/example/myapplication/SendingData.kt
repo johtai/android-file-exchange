@@ -10,17 +10,19 @@ import androidx.compose.runtime.setValue
 import kotlinx.coroutines.delay
 import java.lang.Math.random
 
+val MAX_FILE_SIZE:Int = 1024*1024*50 //50 МБ
+
 object sendingData {
-    lateinit var byteArray: ByteArray
-    var allPackages by mutableIntStateOf(1)
-    var sendingPackages by mutableIntStateOf(0)
+    var byteArray: ByteArray = ByteArray(0)
+    var allPackeges by mutableIntStateOf(1)
+    var sendingPackeges by mutableIntStateOf(0)
     var requestedPackages by mutableIntStateOf(0)
 
     fun setData (context: Context, uri: Uri) {
         try {
             byteArray = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }!!
-            allPackages = 1
-            sendingPackages = 0
+            allPackeges = 1
+            sendingPackeges = 0
             requestedPackages = 0
         } catch (e: Exception){
             println(e.message)

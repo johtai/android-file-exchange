@@ -59,14 +59,18 @@ fun LoadingDialog(isFinished: Boolean, onDismiss: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if (!isFinished) {
-                    CircularProgressIndicator()
-                } else {
-                    Text("Загрузка завершена!")
+                Box(modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center) {
+                    if (!isFinished) {
+                        CircularProgressIndicator()
+                    } else {
+                        Text("Загрузка завершена!")
+                    }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Всего пакетов: ${sendingData.allPackages}")
-                Text("Количество отправленных: ${sendingData.sendingPackages}")
+                Text("Размер файла в байтах: ${sendingData.byteArray.size}")
+                Text("Всего пакетов: ${sendingData.allPackeges}")
+                Text("Количество отправленных: ${sendingData.sendingPackeges}")
                 Text("Повторно запрошено: ${sendingData.requestedPackages}")
             }
         }
