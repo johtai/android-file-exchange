@@ -30,12 +30,12 @@ object sendingData {
     }
 
     suspend fun sendData(){
-        sendingPackages = 0
         val MaxCountPackages: Int = 5
-        allPackages = 1 + (random() * MaxCountPackages).toInt()
-        while(sendingPackages < allPackages){
+        sendingPackeges=0
+        allPackeges = 1 + (random() * MaxCountPackages).toInt()
+        while(sendingPackeges < allPackeges){
             delay(1000)
-            sendingPackages++
+            sendingPackeges++
         }
 
     }

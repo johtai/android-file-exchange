@@ -49,8 +49,6 @@ import com.example.myapplication.ui.theme.MyApplicationTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-var sendingData:SendingData = SendingData()
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
