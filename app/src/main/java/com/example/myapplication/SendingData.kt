@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.delay
 import java.lang.Math.random
+import java.io.File
 
 val MAX_FILE_SIZE:Int = 1024*1024*50 //50 МБ
 
@@ -35,6 +36,21 @@ object sendingData {
             delay(1000)
             sendingPackages++
         }
+    }
 
+    fun splitFile(path: String, chunkSize: Int): List<ByteArray> {
+        val file = File(path)
+        val parts = mutableListOf<ByteArray>()
+        val buffer = ByteArray(chunkSize)
+
+        file.inputStream().use { inputStream ->
+            while (true) {
+                val bytesRead = inputStream.read(buffer)
+                if (bytesRead == -1) break
+                parts.add(buffer.copyOf(bytesRead))
+            }
+        }
+
+        return parts
     }
 }
