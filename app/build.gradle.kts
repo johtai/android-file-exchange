@@ -38,6 +38,7 @@ android {
         compose = true
     }
 }
+val ktor_version: String by project
 
 dependencies {
 
@@ -56,4 +57,7 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation("io.ktor:ktor-client-core:$ktor_version")
+    implementation("io.ktor:ktor-client-cio:$ktor_version")
+    implementation("io.ktor:ktor-network:$ktor_version")
 }

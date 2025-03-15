@@ -1,7 +1,10 @@
 package com.example.myapplication
 
+import LoadingDialog
+import android.content.Context
 import android.net.Uri
 import android.os.Bundle
+import android.os.ParcelFileDescriptor
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -43,9 +46,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.ui.theme.MyApplicationTheme
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-
-var sendingData:SendingData = SendingData()
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,27 +61,40 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Composable
-fun InputField(field: String, onValueChange: (String) -> Unit, text: String) {
-    OutlinedTextField(
-        value = field,
-        onValueChange = onValueChange,
-        label = { Text(text) },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    )
-}
+    @Composable
+    fun InputField(field: String, onValueChange: (String) -> Unit, text: String) {
+        OutlinedTextField(
+            value = field,
+            onValueChange = onValueChange,
+            label = { Text(text) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+    }
 
 @Composable
-fun FilePickerScreen() {
+fun FilePickerScreen(scope: CoroutineScope, snackbarHostState: SnackbarHostState) {
     val context = LocalContext.current
     var selectedFileUri by remember { mutableStateOf<Uri?>(null) }
 
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
-        onResult = { uri -> selectedFileUri = uri
-            sendingData = SendingData(context, selectedFileUri!!)      //выбирает любой файл из системы и записывает его в data
+        onResult = { uri ->
+            uri?.let {
+                val fileSize = getFileSize(context, it)
+                if (fileSize != null && fileSize > MAX_FILE_SIZE) {
+                    scope.launch {
+                        snackbarHostState.showSnackbar("Размер файла не должен превышать ${MAX_FILE_SIZE / 1024 / 1024} МБ")
+                    }
+                } else {
+                    selectedFileUri = it
+                    sendingData.setData(
+                        context,
+                        selectedFileUri!!
+                    )                                       //выбирает любой файл из системы и записывает его в sendingData
+                }
+            }
         }
     )
 
@@ -100,94 +115,117 @@ fun FilePickerScreen() {
         }
     }
 }
+fun getFileSize(context: Context, uri: Uri): Long? {
+    return context.contentResolver.openFileDescriptor(uri, "r")?.use { descriptor: ParcelFileDescriptor ->
+        descriptor.statSize
+    }
+}
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun Body(){
-    val scope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
-    var adress by remember { mutableStateOf("") }                   //адрес отправления
 
-    Scaffold(modifier = Modifier.fillMaxSize(),
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(text = stringResource(R.string.greeting_text))
-                },
-                colors = TopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    scrolledContainerColor = Color.Transparent,
-                    navigationIconContentColor = Color.Transparent,
-                    titleContentColor = Color.Black,
-                    actionIconContentColor = Color.Transparent
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun Body() {
+        val scope = rememberCoroutineScope()
+        val snackbarHostState = remember { SnackbarHostState() }
+        var adress by remember { mutableStateOf("") }                   //адрес отправления
+        var showDialog by remember { mutableStateOf(false) }
+        var isFinished by remember { mutableStateOf(false) }
+
+        Scaffold(modifier = Modifier.fillMaxSize(),
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(text = stringResource(R.string.greeting_text))
+                    },
+                    colors = TopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        scrolledContainerColor = Color.Transparent,
+                        navigationIconContentColor = Color.Transparent,
+                        titleContentColor = Color.Black,
+                        actionIconContentColor = Color.Transparent
+                    )
                 )
-            )
-        },
-        snackbarHost =  {
-            SnackbarHost(hostState = snackbarHostState)
-        }
-    ) { innerPadding ->
-        Column(
-            Modifier
-                .fillMaxSize()
-                .padding(5.dp)
-                .padding(innerPadding),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.Start,
-        ) {
-
-            Spacer(modifier = Modifier.padding(5.dp))
-
-            Row {
-                Text(stringResource(R.string.whom))
-                InputField(adress, { adress = it}, stringResource(R.string.adress))
+            },
+            snackbarHost = {
+                SnackbarHost(hostState = snackbarHostState)
             }
-            Spacer(modifier = Modifier.padding(5.dp))
-            Row {
-                Text(stringResource(R.string.what))
-                FilePickerScreen()
-            }
-            Spacer(modifier = Modifier.padding(5.dp))
-
-            Box(
+        ) { innerPadding ->
+            Column(
                 Modifier
-                    .padding(innerPadding)
-                    .fillMaxSize(),
-                contentAlignment = Alignment.BottomCenter
+                    .fillMaxSize()
+                    .padding(5.dp)
+                    .padding(innerPadding),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.Start,
             ) {
-                Button(
-                    onClick = { scope.launch {                                  //самая главная кнопка "отправить"
-                        val result = snackbarHostState.showSnackbar(
-                            message = "Отправлено",
-                            actionLabel = "Закрыть",  // Добавляем кнопку "Закрыть"
-                            duration = SnackbarDuration.Indefinite // Ожидание нажатия
-                        )
-                        if (result == SnackbarResult.ActionPerformed) {
-                            // Действие при нажатии на кнопку
-                        }
 
-                    } },
+                Spacer(modifier = Modifier.padding(5.dp))
+
+                Row {
+                    Text(stringResource(R.string.whom))
+                    InputField(adress, { adress = it }, stringResource(R.string.adress))
+                }
+                Spacer(modifier = Modifier.padding(5.dp))
+                Row {
+                    Text(stringResource(R.string.what))
+                    FilePickerScreen(scope, snackbarHostState)
+                }
+                Spacer(modifier = Modifier.padding(5.dp))
+
+                Box(
+                    Modifier
+                        .padding(innerPadding)
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.BottomCenter
                 ) {
-                    Text(stringResource(R.string.Send_data))
+                    Button(                             //самая главная кнопка "отправить"
+                        onClick = {
+                            try {
+                                showDialog = true
+                                isFinished = false
+                                scope.launch {
+                                    sendingData.sendData()
+                                    isFinished = true
+                                }
+                            } catch (e:Exception) {
+                                showDialog = false
+                                scope.launch {
+                                    val result = snackbarHostState.showSnackbar(
+                                        message = e.message.toString(),             //ну или что-нибудь другое можно выводить в этом сообщении
+                                        actionLabel = "Закрыть",
+                                        duration = SnackbarDuration.Indefinite
+                                    )
+                                    if (result == SnackbarResult.ActionPerformed) {
+                                    }
+
+                                }
+                            }
+                        },
+                    ) {
+                        Text(stringResource(R.string.Send_data))
+                    }
                 }
             }
         }
+
+        if(showDialog){
+            LoadingDialog(isFinished = isFinished, onDismiss = {showDialog = false})
+        }
     }
-}
 
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    MyApplicationTheme {
-        Body()
+    @Composable
+    fun Greeting(name: String, modifier: Modifier = Modifier) {
+        Text(
+            text = "Hello $name!",
+            modifier = modifier
+        )
     }
-}
+
+    @Preview(showBackground = true)
+    @Composable
+    fun GreetingPreview() {
+        MyApplicationTheme {
+            Body()
+        }
+    }
