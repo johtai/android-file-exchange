@@ -1,24 +1,44 @@
 package com.example.myapplication
 
 import io.ktor.client.*
+import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.sse.*
 import kotlinx.coroutines.*
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json.Default.decodeFromString
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.serialization.kotlinx.json.*
+import kotlinx.serialization.json.Json
+
+@Serializable
+data class Message(val nickname: String)
 
 fun main() {
-    val client = HttpClient {
+    val client = HttpClient (CIO){
         install(SSE) {
             showCommentEvents()
             showRetryEvents()
         }
+        install(ContentNegotiation) {
+            json(Json {
+                prettyPrint = true
+                isLenient = true
+            })
+        }
     }
     runBlocking {
-        client.sse(host = "0.0.0.0", port = 1234, path = "/events") {
+        client.sse(host = "5.167.121.51", port = 2868, path = "/events") {
             while (true) {
                 incoming.collect { event ->
-                    println("Событие от сервера:")
-                    println(event) // Здесь будет проверка события. Если про нас, то создаём сокет с сервером по нужному порту
+                    println("Event from the server:")
+                    //println(event.data)
+                    val obj = decodeFromString<Message>(event.data!!)
 
-                    //
+                    // Здесь будет проверка события. Если про нас, то создаём сокет с сервером по нужному порту
+                    if (obj.nickname == "admin")
+                    {
+                        println("It's works!")
+                    }
                 }
             }
         }
