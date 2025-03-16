@@ -5,15 +5,34 @@ import io.ktor.network.sockets.*
 import io.ktor.utils.io.core.*
 import kotlinx.coroutines.*
 
-fun sendData(ip: String, port: Int){
+fun sendData(ip: String, port: Int, file: List<ByteArray>){
     runBlocking {
         val selectorManager = SelectorManager(Dispatchers.IO)
         val socket = aSocket(selectorManager).udp().bind(InetSocketAddress(ip, port))
-        socket.send(Datagram(ByteReadPacket("Здесь должен быть фрагмент файла".encodeToByteArray()), InetSocketAddress(ip, port)))
+
+        var i = 0;
+        launch(Dispatchers.IO) {
+            while (true) {
+                socket.send(Datagram(ByteReadPacket(file[i]), InetSocketAddress(ip, port))) // Нужно поделить файл так, чтобы в дейтаграмме было место для номера
+                do {
+                    val packet = socket.receive()
+                    val message = packet.packet
+                    if (true) // если пришёл в ответ целый пакет с номером, то ок (потом будет асинхронность)
+                    {
+                        ++i;
+                        break;
+                    }
+                    else
+                    {
+                        socket.send(Datagram(ByteReadPacket(file[i]), InetSocketAddress(ip, port)))
+                    }
+                } while(true)
+            }
+        }
     }
 }
 
-fun recieveData(ip: String, port: Int){ // вероятно, нужен контейнер, в котором будут накапливаться данные
+fun recieveData(ip: String, port: Int, file: List<ByteArray>){
     runBlocking {
         val selectorManager = SelectorManager(Dispatchers.IO)
         val socket = aSocket(selectorManager).udp().bind(InetSocketAddress(ip, port))
@@ -22,8 +41,11 @@ fun recieveData(ip: String, port: Int){ // вероятно, нужен конт
             while (true) {
                 val packet = socket.receive()
                 val message = packet.packet
-
-                socket.send(Datagram(ByteReadPacket("Здесь должна быть хэш-сумма".encodeToByteArray()), packet.address))
+                if (true) // если пришёл целый пакет с номером, то ок (потом будет асинхронность)
+                {
+                    // добавление в файл
+                    socket.send(Datagram(ByteReadPacket("Здесь должен быть номер".encodeToByteArray()), InetSocketAddress(ip, port)))
+                }
             }
         }
     }
