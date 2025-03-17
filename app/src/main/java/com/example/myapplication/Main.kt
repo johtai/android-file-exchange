@@ -13,7 +13,7 @@ import kotlinx.serialization.json.Json
 @Serializable
 data class Message(val nickname: String)
 
-fun main() {
+fun createClient() {
     val client = HttpClient (CIO){
         install(SSE) {
             showCommentEvents()
@@ -26,6 +26,7 @@ fun main() {
             })
         }
     }
+
     runBlocking {
         client.sse(host = "5.167.121.51", port = 2868, path = "/events") {
             while (true) {
@@ -43,5 +44,6 @@ fun main() {
             }
         }
     }
-    client.close()
+
+    //client.close()
 }

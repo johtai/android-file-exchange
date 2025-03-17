@@ -47,6 +47,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -57,6 +58,9 @@ class MainActivity : ComponentActivity() {
             MyApplicationTheme {
                 Body()
             }
+        }
+        CoroutineScope(Dispatchers.IO).launch {
+            createClient()
         }
     }
 }
