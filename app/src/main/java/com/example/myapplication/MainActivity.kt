@@ -117,6 +117,7 @@ fun FilePickerScreen(scope: CoroutineScope, snackbarHostState: SnackbarHostState
         selectedFileUri?.let {
                 Text(text = "Выбранный файл: $it", modifier = Modifier.clickable {})
         }
+
     }
 }
 fun getFileSize(context: Context, uri: Uri): Long? {

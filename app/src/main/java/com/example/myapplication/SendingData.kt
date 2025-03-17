@@ -12,15 +12,16 @@ import java.io.File
 val MAX_FILE_SIZE:Int = 1024*1024*50 //50 МБ
 
 object sendingData {
-    var byteArray: ByteArray = ByteArray(0)
+    lateinit var byteArray: List<ByteArray>
     var allPackages by mutableIntStateOf(1)
     var sendingPackages by mutableIntStateOf(0)
     var requestedPackages by mutableIntStateOf(0)
 
     fun setData (context: Context, uri: Uri) {
         try {
-            byteArray = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }!!
-            allPackages = 1
+            //byteArray = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }!!
+            byteArray = splitFile(uri.toString())
+            allPackages = byteArray.size
             sendingPackages = 0
             requestedPackages = 0
         } catch (e: Exception){
