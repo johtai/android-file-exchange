@@ -38,7 +38,7 @@ object sendingData {
         }
     }
 
-    fun splitFile(path: String, chunkSize: Int): List<ByteArray> {
+    fun splitFile(path: String, chunkSize: Int = 65507): List<ByteArray> {
         val file = File(path)
         val parts = mutableListOf<ByteArray>()
         val buffer = ByteArray(chunkSize)

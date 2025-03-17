@@ -115,7 +115,7 @@ fun FilePickerScreen(scope: CoroutineScope, snackbarHostState: SnackbarHostState
         Spacer(modifier = Modifier.height(16.dp))
 
         selectedFileUri?.let {
-            Text(text = "Выбранный файл: $it", modifier = Modifier.clickable {})
+                Text(text = "Выбранный файл: $it", modifier = Modifier.clickable {})
         }
     }
 }
