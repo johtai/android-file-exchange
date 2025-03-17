@@ -17,7 +17,7 @@ fun sendData(ip: String, port: Int){
             socket.send(Datagram(ByteReadPacket("5".encodeToByteArray()), InetSocketAddress(ip, port)))
         }
 
-        var i = 0;
+        var i = 0
 
         /*
         , file: List<ByteArray>
