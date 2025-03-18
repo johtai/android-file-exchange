@@ -5,22 +5,25 @@ import io.ktor.network.sockets.*
 import io.ktor.utils.io.core.*
 import kotlinx.coroutines.*
 
-fun sendData(ip: String, port: Int){
+fun sendData(ip: String, port: Int, file: List<ByteArray>){
     runBlocking {
-        val selectorManager = SelectorManager(Dispatchers.IO)
-        val socket = aSocket(selectorManager).udp().bind(InetSocketAddress("5.167.121.51", 2868))
-        launch(Dispatchers.IO) {
-            socket.send(Datagram(ByteReadPacket("1".encodeToByteArray()), InetSocketAddress(ip, port)))
-            socket.send(Datagram(ByteReadPacket("2".encodeToByteArray()), InetSocketAddress(ip, port)))
-            socket.send(Datagram(ByteReadPacket("3".encodeToByteArray()), InetSocketAddress(ip, port)))
-            socket.send(Datagram(ByteReadPacket("4".encodeToByteArray()), InetSocketAddress(ip, port)))
-            socket.send(Datagram(ByteReadPacket("5".encodeToByteArray()), InetSocketAddress(ip, port)))
+        try {
+            val selectorManager = SelectorManager(Dispatchers.IO)
+            val socket = aSocket(selectorManager).udp().bind(InetSocketAddress("0.0.0.0", 5088))
+
+            launch(Dispatchers.IO) {
+                socket.send(Datagram(ByteReadPacket("1.jpg".encodeToByteArray()), InetSocketAddress(ip, port)))
+                socket.send(Datagram(ByteReadPacket(file.size.toString().encodeToByteArray()), InetSocketAddress(ip, port)))
+            }
+        } catch (e:Exception) {
+            println("Error: "+ e.message)
         }
+
 
         var i = 0
 
         /*
-        , file: List<ByteArray>
+
         launch(Dispatchers.IO) {
             while (true) {
                 socket.send(Datagram(ByteReadPacket(file[i]), InetSocketAddress(ip, port))) // Нужно поделить файл так, чтобы в дейтаграмме было место для номера
