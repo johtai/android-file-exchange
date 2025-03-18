@@ -42,12 +42,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.fontResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.sp
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+
+val HeadingFont = FontFamily(
+    Font(R.font.ofont_nunito, FontWeight.Normal)
+)
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -135,10 +147,10 @@ fun getFileSize(context: Context, uri: Uri): Long? {
             topBar = {
                 TopAppBar(
                     title = {
-                        Text(text = stringResource(R.string.greeting_text))
+                        Text(text = stringResource(R.string.greeting_text), fontFamily = HeadingFont)
                     },
                     colors = TopAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        containerColor = colorResource(R.color.blue_head),
                         scrolledContainerColor = Color.Transparent,
                         navigationIconContentColor = Color.Transparent,
                         titleContentColor = Color.Black,
@@ -161,15 +173,23 @@ fun getFileSize(context: Context, uri: Uri): Long? {
 
                 Spacer(modifier = Modifier.padding(5.dp))
 
-                Row {
-                    Text(stringResource(R.string.whom))
+
+                    Text(stringResource(R.string.whom),
+                        fontSize = 12.em,
+                        fontFamily = HeadingFont,
+                        color = colorResource(R.color.grey_text))
                     InputField(adress, { adress = it }, stringResource(R.string.adress))
-                }
+
                 Spacer(modifier = Modifier.padding(5.dp))
-                Row {
-                    Text(stringResource(R.string.what))
+
+                    Text(stringResource(R.string.what),
+                        fontFamily = HeadingFont,
+                        fontSize = 12.em,
+                        lineHeight = 1.em,
+                        color = colorResource(R.color.grey_text)
+                    )
                     FilePickerScreen(scope, snackbarHostState)
-                }
+
                 Spacer(modifier = Modifier.padding(5.dp))
 
                 Box(

@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">Data Exchange</string>
     <string name="greeting_text">Данные для отправки</string>
-    <string name="whom">Куда: </string>
-    <string name="what">Что: </string>
+    <string name="whom">Сервер</string>
+    <string name="what">Отправляемый файл</string>
     <string name="Send_data">Отправить</string>
     <string name="adress">Введите адрес</string>
     <string name="choose_file">Выберите файл</string>
