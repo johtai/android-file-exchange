@@ -30,7 +30,7 @@ object sendingData {
 
     suspend fun sendData(){
         val MaxCountPackages: Int = 5
-        sendingPackages=0
+        sendingPackages = 0
         allPackages = 1 + (random() * MaxCountPackages).toInt()
         while(sendingPackages < allPackages){
             delay(1000)
