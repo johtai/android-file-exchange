@@ -116,8 +116,16 @@ fun FilePickerScreen(scope: CoroutineScope, snackbarHostState: SnackbarHostState
     ) {
         Button(onClick = {
             filePickerLauncher.launch(arrayOf("*/*"))
-        }) {
-            Text(stringResource(R.string.choose_file))
+        },
+            modifier = Modifier.size(180.dp, 50.dp),
+            colors = ButtonColors(
+                containerColor = colorResource(R.color.blue_button),
+                contentColor = ButtonDefaults.buttonColors().contentColor,
+                disabledContainerColor = ButtonDefaults.buttonColors().disabledContainerColor,
+                disabledContentColor = ButtonDefaults.buttonColors().disabledContentColor
+            ),
+        ) {
+            Text(stringResource(R.string.choose_file), fontSize = 4.em, fontFamily = HeadingFont)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -229,9 +237,9 @@ fun getFileSize(context: Context, uri: Uri): Long? {
                             disabledContainerColor = ButtonDefaults.buttonColors().disabledContainerColor,
                             disabledContentColor = ButtonDefaults.buttonColors().disabledContentColor
                         ),
-                        modifier = Modifier.size(20.dp, 30.dp),
+                        modifier = Modifier.size(180.dp, 50.dp),
                     ) {
-                        Text(stringResource(R.string.Send_data))
+                        Text(stringResource(R.string.Send_data), fontFamily = HeadingFont, fontSize = 4.em)
                     }
                 }
             }
