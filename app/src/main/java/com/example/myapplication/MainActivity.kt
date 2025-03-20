@@ -138,8 +138,8 @@ fun getFileSize(context: Context, uri: Uri): Long? {
     fun Body() {
         val scope = rememberCoroutineScope()
         val snackbarHostState = remember { SnackbarHostState() }
-        var ipAddress by remember { mutableStateOf("") }                   //адрес отправления
-        var port by remember { mutableStateOf("") }
+        var ipAddress by remember { mutableStateOf("5.167.121.51") }                   //адрес отправления
+        var port by remember { mutableStateOf("2869") }
         var showDialog by remember { mutableStateOf(false) }
         var isFinished by remember { mutableStateOf(false) }
 
@@ -205,7 +205,7 @@ fun getFileSize(context: Context, uri: Uri): Long? {
                                 showDialog = true
                                 isFinished = false
                                 scope.launch {
-                                    sendData("5.167.121.51", 2869, sendingData.byteArray)
+                                    //sendData("5.167.121.51", 2869, sendingData.byteArray)
                                     sendingData.sendData()
                                     isFinished = true
                                 }

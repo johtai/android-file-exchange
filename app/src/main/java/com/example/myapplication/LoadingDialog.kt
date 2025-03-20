@@ -46,7 +46,7 @@ fun LoadingDialog(isFinished: Boolean, onDismiss: () -> Unit) {
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Размер файла в байтах: ${sendingData.byteArray.size}")
+                //Text("Размер файла в байтах: ${sendingData.byteArray.size}")
                 Text("Всего пакетов: ${sendingData.allPackages}")
                 Text("Количество отправленных: ${sendingData.sendingPackages}")
                 Text("Повторно запрошено: ${sendingData.requestedPackages}")
