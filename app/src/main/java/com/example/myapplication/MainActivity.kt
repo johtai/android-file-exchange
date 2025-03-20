@@ -189,7 +189,7 @@ fun getFileSize(context: Context, uri: Uri): Long? {
                                 showDialog = true
                                 isFinished = false
                                 scope.launch {
-                                    sendData("5.167.121.51", 2869, sendingData.byteArray)
+                                    sendData("37.112.239.63", 2869, sendingData.byteArray)
                                     sendingData.sendData()
                                     isFinished = true
                                 }

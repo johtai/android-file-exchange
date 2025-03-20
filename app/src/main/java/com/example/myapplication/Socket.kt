@@ -4,6 +4,8 @@ import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.core.*
 import kotlinx.coroutines.*
+import kotlinx.io.readByteArray
+import kotlinx.io.readString
 
 fun sendData(ip: String, port: Int, file: List<ByteArray>){
     runBlocking {
@@ -12,11 +14,44 @@ fun sendData(ip: String, port: Int, file: List<ByteArray>){
             val socket = aSocket(selectorManager).udp().bind(InetSocketAddress("0.0.0.0", 5088))
 
             launch(Dispatchers.IO) {
-                socket.send(Datagram(ByteReadPacket("1.jpg".encodeToByteArray()), InetSocketAddress(ip, port)))
-                socket.send(Datagram(ByteReadPacket(file.size.toString().encodeToByteArray()), InetSocketAddress(ip, port)))
+                while (true)
+                {
+                    socket.send(Datagram(ByteReadPacket("1.jpg".encodeToByteArray()), InetSocketAddress(ip, port)))
+                    val packet = socket.receive()
+                    if (packet.packet.readString() == "1.jpg")
+                    {
+                        println("Название дошло успешно")
+                        break;
+                    }
+
+                }
+
+                while (true)
+                {
+                    socket.send(Datagram(ByteReadPacket(file.size.toString().encodeToByteArray()), InetSocketAddress(ip, port)))
+                    val packet = socket.receive()
+                    if (packet.packet.readString() == file.size.toString())
+                    {
+                        println("Размер (в пакетах) дошёл успешно")
+                        break;
+                    }
+                }
+
+                for (i in 0..<file.size)
+                {
+                    socket.send(Datagram(ByteReadPacket(file[i]), InetSocketAddress(ip, port)))
+                    println("$i пакет отправлен")
+                    val packet = socket.receive()
+                    val message = packet.packet.readString()
+                    if (message == i.toString())
+                    {
+                        println("$i пакет дошёл до сервера")
+                    }
+                }
+                socket.close()
             }
         } catch (e:Exception) {
-            println("Error: "+ e.message)
+            println("Ошибка: "+ e.message)
         }
 
 
