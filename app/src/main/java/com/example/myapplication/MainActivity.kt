@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -64,6 +65,9 @@ class MainActivity : ComponentActivity() {
             MyApplicationTheme {
                 Body()
             }
+        }
+        CoroutineScope(Dispatchers.IO).launch {
+            createClient()
         }
     }
 }
@@ -116,7 +120,9 @@ fun FilePickerScreen(scope: CoroutineScope, snackbarHostState: SnackbarHostState
 
         selectedFileUri?.let {
             Text(text = stringResource(R.string.choosing_file) + it, modifier = Modifier.clickable {})
+
         }
+
     }
 }
 
@@ -199,6 +205,7 @@ fun getFileSize(context: Context, uri: Uri): Long? {
                                 showDialog = true
                                 isFinished = false
                                 scope.launch {
+                                    sendData("5.167.121.51", 2869, sendingData.byteArray)
                                     sendingData.sendData()
                                     isFinished = true
                                 }
