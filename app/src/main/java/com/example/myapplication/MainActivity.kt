@@ -56,11 +56,6 @@ import com.example.myapplication.ui.theme.MyApplicationTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-val HeadingFont = FontFamily(
-    Font(R.font.ofont_nunito, FontWeight.Normal)
-)
-
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,17 +68,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-    @Composable
-    fun InputField(field: String, onValueChange: (String) -> Unit, text: String) {
-        OutlinedTextField(
-            value = field,
-            onValueChange = onValueChange,
-            label = { Text(text) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
-    }
 
 @Composable
 fun FilePickerScreen(scope: CoroutineScope, snackbarHostState: SnackbarHostState) {
@@ -135,6 +119,7 @@ fun FilePickerScreen(scope: CoroutineScope, snackbarHostState: SnackbarHostState
         }
     }
 }
+
 fun getFileSize(context: Context, uri: Uri): Long? {
     return context.contentResolver.openFileDescriptor(uri, "r")?.use { descriptor: ParcelFileDescriptor ->
         descriptor.statSize
