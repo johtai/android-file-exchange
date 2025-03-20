@@ -67,11 +67,11 @@ fun Application.configureRouting(repository: UserRepository)
         // регистрация на сайте через имя пользователя и пароль
         post("/register"){
             val user = call.receive<User>()
-
+            val pswd = md5(user.password)
             suspendTransaction{
                 UserDAO.new {
                     username = user.username
-                    password = user.password
+                    password = pswd
                 }
             }
             call.respond(HttpStatusCode.Created)
