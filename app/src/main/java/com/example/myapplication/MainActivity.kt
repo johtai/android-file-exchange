@@ -14,15 +14,16 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -41,12 +42,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -58,20 +66,12 @@ class MainActivity : ComponentActivity() {
                 Body()
             }
         }
+        CoroutineScope(Dispatchers.IO).launch {
+            createClient()
+        }
     }
 }
 
-    @Composable
-    fun InputField(field: String, onValueChange: (String) -> Unit, text: String) {
-        OutlinedTextField(
-            value = field,
-            onValueChange = onValueChange,
-            label = { Text(text) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
-    }
 
 @Composable
 fun FilePickerScreen(scope: CoroutineScope, snackbarHostState: SnackbarHostState) {
@@ -104,17 +104,28 @@ fun FilePickerScreen(scope: CoroutineScope, snackbarHostState: SnackbarHostState
     ) {
         Button(onClick = {
             filePickerLauncher.launch(arrayOf("*/*"))
-        }) {
-            Text("Выбрать файл")
+        },
+            modifier = Modifier.size(180.dp, 50.dp),
+            colors = ButtonColors(
+                containerColor = colorResource(R.color.blue_button),
+                contentColor = ButtonDefaults.buttonColors().contentColor,
+                disabledContainerColor = ButtonDefaults.buttonColors().disabledContainerColor,
+                disabledContentColor = ButtonDefaults.buttonColors().disabledContentColor
+            ),
+        ) {
+            Text(stringResource(R.string.choose_file), fontSize = 4.em, fontFamily = HeadingFont)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         selectedFileUri?.let {
-            Text(text = "Выбранный файл: $it", modifier = Modifier.clickable {})
+            Text(text = stringResource(R.string.choosing_file) + it, modifier = Modifier.clickable {})
+
         }
+
     }
 }
+
 fun getFileSize(context: Context, uri: Uri): Long? {
     return context.contentResolver.openFileDescriptor(uri, "r")?.use { descriptor: ParcelFileDescriptor ->
         descriptor.statSize
@@ -127,7 +138,8 @@ fun getFileSize(context: Context, uri: Uri): Long? {
     fun Body() {
         val scope = rememberCoroutineScope()
         val snackbarHostState = remember { SnackbarHostState() }
-        var adress by remember { mutableStateOf("") }                   //адрес отправления
+        var ipAddress by remember { mutableStateOf("") }                   //адрес отправления
+        var port by remember { mutableStateOf("") }
         var showDialog by remember { mutableStateOf(false) }
         var isFinished by remember { mutableStateOf(false) }
 
@@ -135,10 +147,10 @@ fun getFileSize(context: Context, uri: Uri): Long? {
             topBar = {
                 TopAppBar(
                     title = {
-                        Text(text = stringResource(R.string.greeting_text))
+                        Text(text = stringResource(R.string.greeting_text), fontFamily = HeadingFont)
                     },
                     colors = TopAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        containerColor = colorResource(R.color.blue_head),
                         scrolledContainerColor = Color.Transparent,
                         navigationIconContentColor = Color.Transparent,
                         titleContentColor = Color.Black,
@@ -161,15 +173,24 @@ fun getFileSize(context: Context, uri: Uri): Long? {
 
                 Spacer(modifier = Modifier.padding(5.dp))
 
-                Row {
-                    Text(stringResource(R.string.whom))
-                    InputField(adress, { adress = it }, stringResource(R.string.adress))
-                }
+
+                    Text(stringResource(R.string.heading_server),
+                        fontSize = 12.em,
+                        fontFamily = HeadingFont,
+                        color = colorResource(R.color.grey_text))
+                    InputField(ipAddress, { ipAddress = it }, stringResource(R.string.address))
+                    InputField(port, { port = it }, stringResource(R.string.num_of_port))
+
                 Spacer(modifier = Modifier.padding(5.dp))
-                Row {
-                    Text(stringResource(R.string.what))
+
+                    Text(stringResource(R.string.heading_file),
+                        fontFamily = HeadingFont,
+                        fontSize = 12.em,
+                        lineHeight = 1.em,
+                        color = colorResource(R.color.grey_text)
+                    )
                     FilePickerScreen(scope, snackbarHostState)
-                }
+
                 Spacer(modifier = Modifier.padding(5.dp))
 
                 Box(
@@ -184,6 +205,7 @@ fun getFileSize(context: Context, uri: Uri): Long? {
                                 showDialog = true
                                 isFinished = false
                                 scope.launch {
+                                    sendData("5.167.121.51", 2869, sendingData.byteArray)
                                     sendingData.sendData()
                                     isFinished = true
                                 }
@@ -201,8 +223,15 @@ fun getFileSize(context: Context, uri: Uri): Long? {
                                 }
                             }
                         },
+                        colors = ButtonColors(
+                            containerColor = colorResource(R.color.blue_button),
+                            contentColor = ButtonDefaults.buttonColors().contentColor,
+                            disabledContainerColor = ButtonDefaults.buttonColors().disabledContainerColor,
+                            disabledContentColor = ButtonDefaults.buttonColors().disabledContentColor
+                        ),
+                        modifier = Modifier.size(180.dp, 50.dp),
                     ) {
-                        Text(stringResource(R.string.Send_data))
+                        Text(stringResource(R.string.Send_data), fontFamily = HeadingFont, fontSize = 4.em)
                     }
                 }
             }

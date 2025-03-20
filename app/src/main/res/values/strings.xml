@@ -1,10 +1,13 @@
 <resources>
     <string name="app_name">Data Exchange</string>
     <string name="greeting_text">Данные для отправки</string>
-    <string name="whom">Куда: </string>
-    <string name="what">Что: </string>
+    <string name="heading_server">Сервер</string>
+    <string name="heading_file">Отправляемый файл</string>
     <string name="Send_data">Отправить</string>
-    <string name="adress">Введите адрес</string>
-    <string name="choose_file">Выберите файл</string>
+    <string name="address">Введите ip-адрес</string>
+    <string name="num_of_port">Введите номер порта</string>
+    <string name="choose_file">Выбрать файл</string>
+    <string name="choosing_file">Выбранный файл: </string>
+    <string name="close">Закрыть</string>
 
 </resources>
