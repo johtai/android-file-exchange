@@ -5,6 +5,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
+import android.text.Layout
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -46,8 +47,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.screens.HeadingFont
 import com.example.myapplication.screens.InputField
+import com.example.myapplication.screens.LoginScreen
+import com.example.myapplication.screens.RegisterScreen
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -68,6 +74,15 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@Composable
+fun LoginAndRegistration(){
+    val navController = rememberNavController()
+
+    NavHost(navController = navController, startDestination = "login_screen", builder = {
+        composable("login_screen", content = { LoginScreen(navController = navController) })
+        composable("register_screen", content = { RegisterScreen(navController = navController) })
+    })
+}
 
 @Composable
 fun FilePickerScreen(scope: CoroutineScope, snackbarHostState: SnackbarHostState) {
@@ -94,10 +109,8 @@ fun FilePickerScreen(scope: CoroutineScope, snackbarHostState: SnackbarHostState
         }
     )
 
-    Column(
-        modifier = Modifier
-            .padding(16.dp)
-    ) {
+    Spacer(modifier = Modifier.height(5.dp))
+    Column() {
         Button(onClick = {
             filePickerLauncher.launch(arrayOf("*/*"))
         },
@@ -116,7 +129,6 @@ fun FilePickerScreen(scope: CoroutineScope, snackbarHostState: SnackbarHostState
 
         selectedFileUri?.let {
             Text(text = stringResource(R.string.choosing_file) + it, modifier = Modifier.clickable {})
-
         }
 
     }
@@ -166,23 +178,19 @@ fun getFileSize(context: Context, uri: Uri): Long? {
                     .fillMaxSize()
                     .padding(5.dp)
                     .padding(innerPadding),
-                verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.Start,
             ) {
 
-                Spacer(modifier = Modifier.padding(5.dp))
-
-
-                    Text(stringResource(R.string.heading_server),
+                Text(stringResource(R.string.heading_server),
                         fontSize = 12.em,
                         fontFamily = HeadingFont,
                         color = colorResource(R.color.grey_text))
-                    InputField(ipAddress, { ipAddress = it }, stringResource(R.string.address))
-                    InputField(port, { port = it }, stringResource(R.string.num_of_port))
+                InputField(ipAddress, { ipAddress = it }, stringResource(R.string.address))
+                InputField(port, { port = it }, stringResource(R.string.num_of_port))
 
-                Spacer(modifier = Modifier.padding(5.dp))
+                Spacer(modifier = Modifier.height(5.dp))
 
-                    Text(stringResource(R.string.heading_file),
+                Text(stringResource(R.string.heading_file),
                         fontFamily = HeadingFont,
                         fontSize = 12.em,
                         lineHeight = 1.em,
@@ -190,14 +198,9 @@ fun getFileSize(context: Context, uri: Uri): Long? {
                     )
                     FilePickerScreen(scope, snackbarHostState)
 
-                Spacer(modifier = Modifier.padding(5.dp))
 
-                Box(
-                    Modifier
-                        .padding(innerPadding)
-                        .fillMaxSize(),
-                    contentAlignment = Alignment.TopStart
-                ) {
+                Box(modifier = Modifier.fillMaxSize().padding(16.dp),
+                    contentAlignment = Alignment.BottomCenter) {
                     Button(                             //самая главная кнопка "отправить"
                         onClick = {
                             try {
@@ -208,7 +211,7 @@ fun getFileSize(context: Context, uri: Uri): Long? {
                                     sendingData.sendData()
                                     isFinished = true
                                 }
-                            } catch (e:Exception) {
+                            } catch (e: Exception) {
                                 showDialog = false
                                 scope.launch {
                                     val result = snackbarHostState.showSnackbar(
@@ -228,9 +231,13 @@ fun getFileSize(context: Context, uri: Uri): Long? {
                             disabledContainerColor = ButtonDefaults.buttonColors().disabledContainerColor,
                             disabledContentColor = ButtonDefaults.buttonColors().disabledContentColor
                         ),
-                        modifier = Modifier.size(180.dp, 50.dp),
+                        modifier = Modifier.size(180.dp, 50.dp)
                     ) {
-                        Text(stringResource(R.string.Send_data), fontFamily = HeadingFont, fontSize = 4.em)
+                        Text(
+                            stringResource(R.string.Send_data),
+                            fontFamily = HeadingFont,
+                            fontSize = 4.em
+                        )
                     }
                 }
             }
@@ -242,13 +249,6 @@ fun getFileSize(context: Context, uri: Uri): Long? {
     }
 
 
-    @Composable
-    fun Greeting(name: String, modifier: Modifier = Modifier) {
-        Text(
-            text = "Hello $name!",
-            modifier = modifier
-        )
-    }
 
     @Preview(showBackground = true)
     @Composable

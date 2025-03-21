@@ -1,5 +1,6 @@
 package com.example.myapplication.screens
 
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MenuItemColors
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -25,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
@@ -32,11 +35,16 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.example.myapplication.R
+import com.example.myapplication.ui.theme.MyApplicationTheme
 
 @Composable
-fun RegistrationScreen() {
+fun RegisterScreen(navController: NavController) {
     val context = LocalContext.current
     val name = remember {
         mutableStateOf(TextFieldValue())
@@ -61,7 +69,7 @@ fun RegistrationScreen() {
         verticalArrangement = Arrangement.Center,
     ) {
 
- }
+
         Text(text = buildAnnotatedString {
             withStyle(style = SpanStyle(color = Color.Red)) {
                 append("R")
@@ -158,17 +166,18 @@ fun RegistrationScreen() {
                 Text(text = "Password*")
             },
             isError = passwordErrorState.value,
-            trailingIcon = {
-                IconButton(onClick = {
-                    passwordVisibility.value = !passwordVisibility.value
-                }) {
-                    Icon(
-                        imageVector = if (passwordVisibility.value) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                        contentDescription = "visibility",
-                        tint = Color.Red
-                    )
-                }
-            },
+//            trailingIcon = {
+//                IconButton(onClick = {
+//                    passwordVisibility.value = !passwordVisibility.value
+//                }) {
+//                    Icon(
+//                        painter =  if (passwordVisibility.value) painterResource(R.drawable.),
+//                        imageVector = if (passwordVisibility.value) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+//                        contentDescription = "visibility",
+//                        tint = Color.Red
+//                    )
+//                }
+//            },
             visualTransformation = if (passwordVisibility.value) PasswordVisualTransformation() else VisualTransformation.None
         )
         if (passwordErrorState.value) {
@@ -190,17 +199,17 @@ fun RegistrationScreen() {
             label = {
                 Text(text = "Confirm Password*")
             },
-            trailingIcon = {
-                IconButton(onClick = {
-                    cPasswordVisibility.value = !cPasswordVisibility.value
-                }) {
-                    Icon(
-                        imageVector = if (cPasswordVisibility.value) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                        contentDescription = "visibility",
-                        tint = Color.Red
-                    )
-                }
-            },
+//            trailingIcon = {
+//                IconButton(onClick = {
+//                    cPasswordVisibility.value = !cPasswordVisibility.value
+//                }) {
+//                    Icon(
+//                        imageVector = if (cPasswordVisibility.value) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+//                        contentDescription = "visibility",
+//                        tint = Color.Red
+//                    )
+//                }
+//            },
             visualTransformation = if (cPasswordVisibility.value) PasswordVisualTransformation() else VisualTransformation.None
         )
         if (confirmPasswordErrorState.value) {
@@ -220,24 +229,30 @@ fun RegistrationScreen() {
                     name.value.text.isEmpty() -> {
                         nameErrorState.value = true
                     }
+
                     email.value.text.isEmpty() -> {
                         emailErrorState.value = true
                     }
+
                     password.value.text.isEmpty() -> {
                         passwordErrorState.value = true
                     }
+
                     confirmPassword.value.text.isEmpty() -> {
                         confirmPasswordErrorState.value = true
                     }
+
                     confirmPassword.value.text != password.value.text -> {
                         confirmPasswordErrorState.value = true
                     }
+
                     else -> {
                         Toast.makeText(
                             context,
                             "Registered successfully",
                             Toast.LENGTH_SHORT
                         ).show()
+
                         navController.navigate("login_screen") {
                             popUpTo(navController.graph.startDestinationId)
                             launchSingleTop = true
@@ -262,5 +277,13 @@ fun RegistrationScreen() {
                 Text(text = "Login", color = Color.Red)
             }
         }
+    }
+}
+
+@Preview
+@Composable
+fun RegistPrewiew(){
+    MyApplicationTheme {
+        RegisterScreen(rememberNavController())
     }
 }

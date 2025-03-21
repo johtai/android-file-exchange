@@ -32,6 +32,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.R
 
 
@@ -59,7 +61,7 @@ fun PasswordTextField(field: String, onValueChange: (String) -> Unit, text: Stri
 }
 
 @Composable
-fun LoginPage() {
+fun LoginScreen(navController: NavController) {
     Box(modifier = Modifier.fillMaxSize()) {
         ClickableText(
             text = AnnotatedString("Зарегистрироваться"),
@@ -132,6 +134,6 @@ fun LoginPage() {
 @Composable
 fun AuthPreview() {
     MyApplicationTheme {
-        LoginPage()
+        LoginScreen(rememberNavController())
     }
 }
