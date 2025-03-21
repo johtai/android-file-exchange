@@ -16,9 +16,10 @@ fun sendData(ip: String, port: Int, file: List<ByteArray>){
             launch(Dispatchers.IO) {
                 while (true)
                 {
-                    socket.send(Datagram(ByteReadPacket("1.jpg".encodeToByteArray()), InetSocketAddress(ip, port)))
+                    val filename = sendingData.filename
+                    socket.send(Datagram(ByteReadPacket(filename.encodeToByteArray()), InetSocketAddress(ip, port)))
                     val packet = socket.receive()
-                    if (packet.packet.readString() == "1.jpg")
+                    if (packet.packet.readString() == filename)
                     {
                         println("Название дошло успешно")
                         break;
@@ -46,6 +47,11 @@ fun sendData(ip: String, port: Int, file: List<ByteArray>){
                     if (message == i.toString())
                     {
                         println("$i пакет дошёл до сервера")
+                        ++sendingData.sendingPackages
+                    }
+                    else
+                    {
+                        socket.send(Datagram(ByteReadPacket(file[i]), InetSocketAddress(ip, port)))
                     }
                 }
                 socket.close()
@@ -53,9 +59,6 @@ fun sendData(ip: String, port: Int, file: List<ByteArray>){
         } catch (e:Exception) {
             println("Ошибка: "+ e.message)
         }
-
-
-        var i = 0
 
         /*
 

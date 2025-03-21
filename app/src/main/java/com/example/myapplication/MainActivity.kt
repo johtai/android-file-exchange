@@ -65,17 +65,17 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-    @Composable
-    fun InputField(field: String, onValueChange: (String) -> Unit, text: String) {
-        OutlinedTextField(
-            value = field,
-            onValueChange = onValueChange,
-            label = { Text(text) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
-    }
+@Composable
+fun InputField(field: String, onValueChange: (String) -> Unit, text: String) {
+    OutlinedTextField(
+        value = field,
+        onValueChange = onValueChange,
+        label = { Text(text) },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    )
+}
 
 @Composable
 fun FilePickerScreen(scope: CoroutineScope, snackbarHostState: SnackbarHostState) {
@@ -115,7 +115,7 @@ fun FilePickerScreen(scope: CoroutineScope, snackbarHostState: SnackbarHostState
         Spacer(modifier = Modifier.height(16.dp))
 
         selectedFileUri?.let {
-                Text(text = "Выбранный файл: $it", modifier = Modifier.clickable {})
+            Text(text = "Выбранный файл: $it", modifier = Modifier.clickable {})
         }
 
     }
@@ -127,111 +127,111 @@ fun getFileSize(context: Context, uri: Uri): Long? {
 }
 
 
-    @OptIn(ExperimentalMaterial3Api::class)
-    @Composable
-    fun Body() {
-        val scope = rememberCoroutineScope()
-        val snackbarHostState = remember { SnackbarHostState() }
-        var adress by remember { mutableStateOf("") }                   //адрес отправления
-        var showDialog by remember { mutableStateOf(false) }
-        var isFinished by remember { mutableStateOf(false) }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun Body() {
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    var adress by remember { mutableStateOf("") }                   //адрес отправления
+    var showDialog by remember { mutableStateOf(false) }
+    var isFinished by remember { mutableStateOf(false) }
 
-        Scaffold(modifier = Modifier.fillMaxSize(),
-            topBar = {
-                TopAppBar(
-                    title = {
-                        Text(text = stringResource(R.string.greeting_text))
-                    },
-                    colors = TopAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        scrolledContainerColor = Color.Transparent,
-                        navigationIconContentColor = Color.Transparent,
-                        titleContentColor = Color.Black,
-                        actionIconContentColor = Color.Transparent
-                    )
+    Scaffold(modifier = Modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(text = stringResource(R.string.greeting_text))
+                },
+                colors = TopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    scrolledContainerColor = Color.Transparent,
+                    navigationIconContentColor = Color.Transparent,
+                    titleContentColor = Color.Black,
+                    actionIconContentColor = Color.Transparent
                 )
-            },
-            snackbarHost = {
-                SnackbarHost(hostState = snackbarHostState)
+            )
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        }
+    ) { innerPadding ->
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(5.dp)
+                .padding(innerPadding),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.Start,
+        ) {
+
+            Spacer(modifier = Modifier.padding(5.dp))
+
+            Row {
+                Text(stringResource(R.string.whom))
+                InputField(adress, { adress = it }, stringResource(R.string.adress))
             }
-        ) { innerPadding ->
-            Column(
+            Spacer(modifier = Modifier.padding(5.dp))
+            Row {
+                Text(stringResource(R.string.what))
+                FilePickerScreen(scope, snackbarHostState)
+            }
+            Spacer(modifier = Modifier.padding(5.dp))
+
+            Box(
                 Modifier
-                    .fillMaxSize()
-                    .padding(5.dp)
-                    .padding(innerPadding),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.Start,
+                    .padding(innerPadding)
+                    .fillMaxSize(),
+                contentAlignment = Alignment.BottomCenter
             ) {
-
-                Spacer(modifier = Modifier.padding(5.dp))
-
-                Row {
-                    Text(stringResource(R.string.whom))
-                    InputField(adress, { adress = it }, stringResource(R.string.adress))
-                }
-                Spacer(modifier = Modifier.padding(5.dp))
-                Row {
-                    Text(stringResource(R.string.what))
-                    FilePickerScreen(scope, snackbarHostState)
-                }
-                Spacer(modifier = Modifier.padding(5.dp))
-
-                Box(
-                    Modifier
-                        .padding(innerPadding)
-                        .fillMaxSize(),
-                    contentAlignment = Alignment.BottomCenter
-                ) {
-                    Button(                             //самая главная кнопка "отправить"
-                        onClick = {
-                            try {
-                                showDialog = true
-                                isFinished = false
-                                scope.launch {
-                                    sendData("37.112.239.63", 2869, sendingData.byteArray)
-                                    sendingData.sendData()
-                                    isFinished = true
-                                }
-                            } catch (e:Exception) {
-                                showDialog = false
-                                scope.launch {
-                                    val result = snackbarHostState.showSnackbar(
-                                        message = e.message.toString(),             //ну или что-нибудь другое можно выводить в этом сообщении
-                                        actionLabel = "Закрыть",
-                                        duration = SnackbarDuration.Indefinite
-                                    )
-                                    if (result == SnackbarResult.ActionPerformed) {
-                                    }
-
-                                }
+                Button(                             //самая главная кнопка "отправить"
+                    onClick = {
+                        try {
+                            showDialog = true
+                            isFinished = false
+                            scope.launch {
+                                sendData("5.165.249.136", 2869, sendingData.byteArray)
+                                sendingData.sendData()
+                                isFinished = true
                             }
-                        },
-                    ) {
-                        Text(stringResource(R.string.Send_data))
-                    }
+                        } catch (e:Exception) {
+                            showDialog = false
+                            scope.launch {
+                                val result = snackbarHostState.showSnackbar(
+                                    message = e.message.toString(),             //ну или что-нибудь другое можно выводить в этом сообщении
+                                    actionLabel = "Закрыть",
+                                    duration = SnackbarDuration.Indefinite
+                                )
+                                if (result == SnackbarResult.ActionPerformed) {
+                                }
+
+                            }
+                        }
+                    },
+                ) {
+                    Text(stringResource(R.string.Send_data))
                 }
             }
         }
-
-        if(showDialog){
-            LoadingDialog(isFinished = isFinished, onDismiss = {showDialog = false})
-        }
     }
 
-
-    @Composable
-    fun Greeting(name: String, modifier: Modifier = Modifier) {
-        Text(
-            text = "Hello $name!",
-            modifier = modifier
-        )
+    if(showDialog){
+        LoadingDialog(isFinished = isFinished, onDismiss = {showDialog = false})
     }
+}
 
-    @Preview(showBackground = true)
-    @Composable
-    fun GreetingPreview() {
-        MyApplicationTheme {
-            Body()
-        }
+
+@Composable
+fun Greeting(name: String, modifier: Modifier = Modifier) {
+    Text(
+        text = "Hello $name!",
+        modifier = modifier
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun GreetingPreview() {
+    MyApplicationTheme {
+        Body()
     }
+}
