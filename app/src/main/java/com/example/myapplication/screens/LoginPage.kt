@@ -27,6 +27,7 @@ import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.*
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -62,23 +63,10 @@ fun PasswordTextField(field: String, onValueChange: (String) -> Unit, text: Stri
 
 @Composable
 fun LoginScreen(navController: NavController) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        ClickableText(
-            text = AnnotatedString("Зарегистрироваться"),
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(20.dp),
-            onClick = { },
-            style = TextStyle(
-                fontSize = 14.sp,
-                fontFamily = FontFamily.Default,
-                textDecoration = TextDecoration.Underline,
-                color = colorResource(R.color.purple_200)
-            )
-        )
-    }
+
     Column(
-        modifier = Modifier.padding(20.dp),
+        modifier = Modifier.padding(20.dp)
+            .fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -86,20 +74,20 @@ fun LoginScreen(navController: NavController) {
         val username = remember { mutableStateOf(TextFieldValue()) }
         val password = remember { mutableStateOf(TextFieldValue()) }
 
-        Text(text = "Войдите в аккаунт",
+        Text(text = stringResource(R.string.login_head_text),
             fontFamily = HeadingFont,
             color = colorResource(R.color.grey_text),
             fontSize = 7.em)
 
         Spacer(modifier = Modifier.height(20.dp))
         TextField(
-            label = { Text(text = "Логин") },
+            label = { Text(text = stringResource(R.string.login_mes)) },
             value = username.value,
             onValueChange = { username.value = it })
 
         Spacer(modifier = Modifier.height(20.dp))
         TextField(
-            label = { Text(text = "Пароль") },
+            label = { Text(text = stringResource(R.string.password_mes)) },
             value = password.value,
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -108,17 +96,41 @@ fun LoginScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(20.dp))
         Box(modifier = Modifier.padding(40.dp, 0.dp, 40.dp, 0.dp)) {
             Button(
-                onClick = { },
+                onClick = { navController.navigate(Routes.Send.route){
+                    popUpTo(navController.graph.startDestinationId)
+                    launchSingleTop = true
+                } },
                 shape = RoundedCornerShape(50.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp)
+                    .height(50.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.blue_button))
             ) {
-                Text(text = "Войти")
+                Text(text = stringResource(R.string.to_enter))
             }
         }
 
         Spacer(modifier = Modifier.height(20.dp))
+        Box(contentAlignment = Alignment.BottomCenter) {
+            ClickableText(
+                text = AnnotatedString(stringResource(R.string.to_regist)),
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(20.dp),
+                onClick = {
+                    navController.navigate(Routes.Regist.route) {
+                        popUpTo(navController.graph.startDestinationId)
+                        launchSingleTop = true
+                    }
+                },
+                style = TextStyle(
+                    fontSize = 14.sp,
+                    fontFamily = FontFamily.Default,
+                    textDecoration = TextDecoration.Underline,
+                    color = colorResource(R.color.purple_200)
+                )
+            )
+        }
 //        ClickableText(
 //            text = AnnotatedString("Forgot password?"),
 //            onClick = { },

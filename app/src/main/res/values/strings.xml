@@ -1,13 +1,31 @@
 <resources>
     <string name="app_name">Data Exchange</string>
+
+    //экран отпраки данных
     <string name="greeting_text">Данные для отправки</string>
     <string name="heading_server">Сервер</string>
     <string name="heading_file">Отправляемый файл</string>
     <string name="Send_data">Отправить</string>
-    <string name="address">Введите ip-адрес</string>
-    <string name="num_of_port">Введите номер порта</string>
+    <string name="address">IP-адрес</string>
+    <string name="num_of_port">Номер порта</string>
     <string name="choose_file">Выбрать файл</string>
     <string name="choosing_file">Выбранный файл: </string>
     <string name="close">Закрыть</string>
 
+    //Вход
+    <string name="login_head_text">Войдите в аккаунт</string>
+    <string name="login_mes">Логин</string>
+    <string name="password_mes">Пароль</string>
+    <string name="to_enter">Войти</string>
+    <string name="to_regist">Зарегистрироваться</string>
+
+    //Регистрация
+    <string name="regist_head_text">Регистрация</string>
+    <string name="user_name">Имя пользователя</string>
+    <string name="email">Email</string>
+    <string name="password">Пароль</string>
+    <string name="confirm_password">Подтвердите пароль</string>
+    <string name="not_match_pass">Не соответствуют пароли</string>
+    <string name="success_regist_mes">Пользователь успещно зарегистрирован</string>
+    <string name="requir_mes">Обязательно</string>
 </resources>

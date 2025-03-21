@@ -1,8 +1,10 @@
 package com.example.myapplication.screens
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,10 +26,13 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
@@ -50,8 +55,6 @@ fun RegisterScreen(navController: NavController) {
         mutableStateOf(TextFieldValue())
     }
     val email = remember { mutableStateOf(TextFieldValue()) }
-    val countryCode = remember { mutableStateOf(TextFieldValue()) }
-    val mobileNo = remember { mutableStateOf(TextFieldValue()) }
     val password = remember { mutableStateOf(TextFieldValue()) }
     val confirmPassword = remember { mutableStateOf(TextFieldValue()) }
 
@@ -70,14 +73,15 @@ fun RegisterScreen(navController: NavController) {
     ) {
 
 
-        Text(text = buildAnnotatedString {
-            withStyle(style = SpanStyle(color = Color.Red)) {
-                append("R")
-            }
-            withStyle(style = SpanStyle(color = Color.Black)) {
-                append("egistration")
-            }
-        }, fontSize = 30.sp)
+        Box(modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center) {
+            Text(
+                text = stringResource(R.string.regist_head_text),
+                fontSize = 30.sp,
+                fontFamily = HeadingFont,
+                color = colorResource(R.color.grey_text)
+            )
+        }
         Spacer(Modifier.size(16.dp))
         OutlinedTextField(
             value = name.value,
@@ -91,12 +95,9 @@ fun RegisterScreen(navController: NavController) {
             modifier = Modifier.fillMaxWidth(),
             isError = nameErrorState.value,
             label = {
-                Text(text = "Name*")
+                Text(text = stringResource(R.string.user_name))
             },
         )
-        if (nameErrorState.value) {
-            Text(text = "Required", color = Color.Red)
-        }
         Spacer(Modifier.size(16.dp))
 
         OutlinedTextField(
@@ -111,46 +112,9 @@ fun RegisterScreen(navController: NavController) {
             modifier = Modifier.fillMaxWidth(),
             isError = emailErrorState.value,
             label = {
-                Text(text = "Email*")
+                Text(text = stringResource(R.string.email))
             },
         )
-        if (emailErrorState.value) {
-            Text(text = "Required", color = Color.Red)
-        }
-        Spacer(modifier = Modifier.size(16.dp))
-        Row() {
-            OutlinedTextField(
-                value = countryCode.value,
-                onValueChange = {
-
-                    countryCode.value = it
-                },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number,
-                    autoCorrect = false
-                ),
-                modifier = Modifier.fillMaxWidth(0.3f),
-                label = {
-                    Text(text = "Code")
-                },
-            )
-            Spacer(modifier = Modifier.size(16.dp))
-            OutlinedTextField(
-                value = mobileNo.value,
-                onValueChange = {
-
-                    mobileNo.value = it
-                },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Phone,
-                    autoCorrect = false
-                ),
-                label = {
-                    Text(text = "Mobile No")
-                },
-            )
-        }
-
         Spacer(Modifier.size(16.dp))
         val passwordVisibility = remember { mutableStateOf(true) }
         OutlinedTextField(
@@ -163,7 +127,7 @@ fun RegisterScreen(navController: NavController) {
             },
             modifier = Modifier.fillMaxWidth(),
             label = {
-                Text(text = "Password*")
+                Text(text = stringResource(R.string.password))
             },
             isError = passwordErrorState.value,
 //            trailingIcon = {
@@ -180,9 +144,6 @@ fun RegisterScreen(navController: NavController) {
 //            },
             visualTransformation = if (passwordVisibility.value) PasswordVisualTransformation() else VisualTransformation.None
         )
-        if (passwordErrorState.value) {
-            Text(text = "Required", color = Color.Red)
-        }
 
         Spacer(Modifier.size(16.dp))
         val cPasswordVisibility = remember { mutableStateOf(true) }
@@ -197,7 +158,7 @@ fun RegisterScreen(navController: NavController) {
             modifier = Modifier.fillMaxWidth(),
             isError = confirmPasswordErrorState.value,
             label = {
-                Text(text = "Confirm Password*")
+                Text(text = stringResource(R.string.confirm_password))
             },
 //            trailingIcon = {
 //                IconButton(onClick = {
@@ -213,14 +174,9 @@ fun RegisterScreen(navController: NavController) {
             visualTransformation = if (cPasswordVisibility.value) PasswordVisualTransformation() else VisualTransformation.None
         )
         if (confirmPasswordErrorState.value) {
-            val msg = if (confirmPassword.value.text.isEmpty()) {
-                "Required"
-            } else if (confirmPassword.value.text != password.value.text) {
-                "Password not matching"
-            } else {
-                ""
+            if (confirmPassword.value.text != password.value.text) {
+                Text(text = stringResource(R.string.not_match_pass), color = Color.Red)
             }
-            Text(text = msg, color = Color.Red)
         }
         Spacer(Modifier.size(16.dp))
         Button(
@@ -249,11 +205,11 @@ fun RegisterScreen(navController: NavController) {
                     else -> {
                         Toast.makeText(
                             context,
-                            "Registered successfully",
+                            "Пользователь успешно зарегистрирован",
                             Toast.LENGTH_SHORT
                         ).show()
 
-                        navController.navigate("login_screen") {
+                        navController.navigate(Routes.Login.route) {
                             popUpTo(navController.graph.startDestinationId)
                             launchSingleTop = true
                         }
@@ -261,20 +217,20 @@ fun RegisterScreen(navController: NavController) {
                 }
             },
             content = {
-                Text(text = "Register", color = Color.White)
+                Text(text = stringResource(R.string.to_regist), fontFamily = HeadingFont)
             },
             modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+            colors = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.blue_button))
         )
         Spacer(Modifier.size(16.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
             TextButton(onClick = {
-                navController.navigate("login_screen") {
+                navController.navigate(Routes.Login.route) {
                     popUpTo(navController.graph.startDestinationId)
                     launchSingleTop = true
                 }
             }) {
-                Text(text = "Login", color = Color.Red)
+                Text(text = stringResource(R.string.to_enter), color = colorResource(R.color.grey_text), fontFamily = HeadingFont)
             }
         }
     }
