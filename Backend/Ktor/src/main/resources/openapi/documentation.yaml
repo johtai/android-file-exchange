@@ -4,7 +4,7 @@ info:
   description: "Application API"
   version: "1.0.0"
 servers:
-  - url: "http://0.0.0.0:8080"
+  - url: "http://0.0.0.0:2868"
 paths:
   /:
     get:
@@ -19,6 +19,39 @@ paths:
               examples:
                 Example#1:
                   value: "Hello World!"
+
+  /login:
+    post:
+      description: "login to the site"
+      tags:
+        - UserAuthentication
+      responses:
+        "401":
+          description: "Unauthorized"
+      parameters:
+        - username: String
+          in: "username"
+          allowEmptyValue: false
+        - password: String
+          in: "password"
+          allowEmptyValue: false
+
+  /register:
+    post:
+      description: "register to the site"
+      tags:
+        - UserAuthentication
+      responses:
+        "201":
+          description: "Created"
+      parameters:
+        - username: String
+          in: "username"
+          allowEmptyValue: false
+        - password: String
+          in: "password"
+          allowEmptyValue: false
+
   /file:
     get:
       description: "get file form server"

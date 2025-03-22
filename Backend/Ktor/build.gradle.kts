@@ -45,6 +45,9 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-dao:0.50.0")
     implementation("org.jetbrains.exposed:exposed-jdbc:0.50.0")
     implementation("org.postgresql:postgresql:42.7.2")
+    implementation("io.ktor:ktor-server-sse:$ktor_version")
+    implementation("ch.qos.logback:logback-classic:1.5.9")
+    implementation("io.ktor:ktor-network:$ktor_version")
 
 
 

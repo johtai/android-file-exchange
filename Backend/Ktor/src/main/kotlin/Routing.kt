@@ -17,9 +17,24 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
+import io.ktor.server.sse.*
+import io.ktor.sse.*
+import kotlinx.coroutines.delay
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import org.postgresql.util.MD5Digest
 import java.io.File
 import java.lang.IllegalArgumentException
 import java.util.*
+import java.math.BigInteger
+import java.security.MessageDigest
+
+//MD5-конвертер для пароля
+fun md5(input: String): String{
+    val md = MessageDigest.getInstance("MD5")
+    return BigInteger(1, md.digest(input.toByteArray())).toString(16).padStart(32, '0')
+}
 
 fun Application.configureRouting(repository: UserRepository)
 {
@@ -30,11 +45,12 @@ fun Application.configureRouting(repository: UserRepository)
 
     routing {
 
+        // Получение JWT-токена по имени пользователя и паролю
         post("/login"){
             val user = call.receive<User>()
             // Check username and password
-            val userDAO = suspendTransaction {   UserDAO.find { UserTable.username eq user.username}.firstOrNull()}
-            if (userDAO != null && userDAO.password == user.password){
+            val userDAO = suspendTransaction { UserDAO.find { UserTable.username eq user.username}.firstOrNull()}
+            if (userDAO != null && userDAO.password ==  md5(user.password)){
                 val token = JWT.create()
                     .withAudience(audience)
                     .withIssuer(issuer)
@@ -47,6 +63,51 @@ fun Application.configureRouting(repository: UserRepository)
             }
         }
 
+
+        // регистрация на сайте через имя пользователя и пароль
+        post("/register"){
+            val user = call.receive<User>()
+            val pswd = md5(user.password)
+            suspendTransaction{
+                UserDAO.new {
+                    username = user.username
+                    password = pswd
+                }
+            }
+            call.respond(HttpStatusCode.Created)
+
+//            val username = call.parameters["username"]
+//            val password = call.parameters["password"]
+//            if (username != null && password != null) {
+//                suspendTransaction {
+//                    UserDAO.new {
+//                        this.username = username
+//                        this.password = password
+//                    }
+//                }
+//                call.respond(HttpStatusCode.Created)
+//            } else {
+//                call.respond(HttpStatusCode.BadRequest)
+//            }
+
+        }
+
+        sse("/events") {
+            call.application.environment.log.info("/events was touched")
+            val message = Message("admin")
+            val jsonMessage = Json.encodeToString(message)
+            send(ServerSentEvent(event = "jsonEvent", data = jsonMessage))
+            for(message in messageChannel){
+               //val event = ServerSentEvent(event = "jsonevent", )
+               send(ServerSentEvent(event = "jsonEvent", data = message))
+            }
+
+        }
+
+
+
+
+        // Вход на /hello аунтентификационным пользователям
         authenticate("auth-jwt")
         {
             get("/hello"){
@@ -55,15 +116,18 @@ fun Application.configureRouting(repository: UserRepository)
                 val username = principal!!.payload.getClaim("username").asString()
                 val expiresAt = principal.expiresAt?.time?.minus(System.currentTimeMillis())
                 call.respondText("Hello, $username! Token is expired at $expiresAt ms.")
-                //call.respondText("Сессия прошла!")
             }
 
         }
 
+
+        // Начальная страница
         get("/"){
             call.respondText("Hello, ${call.principal<CustomPrincipal>()?.userName}!")
         }
 
+
+        //
         get("/file") {
             val filepath = "./src/main/resources/abc.txt"
             val file = File(filepath)
@@ -82,6 +146,7 @@ fun Application.configureRouting(repository: UserRepository)
             }
         }
 
+        //Проверка статуса сервера
         get("/status"){
             call.respondText("Сервер запущен!", status = HttpStatusCode.OK)
         }
@@ -144,6 +209,7 @@ fun Application.configureRouting(repository: UserRepository)
 //        }
 
         get("/files"){
+            println("hello")
             val directoryPath = "./src/main/resources/"
             val directory = File(directoryPath)
 
