@@ -7,13 +7,13 @@ import kotlinx.coroutines.*
 import kotlinx.io.readByteArray
 import kotlinx.io.readString
 
-fun sendData(ip: String, port: Int, file: List<ByteArray>){
-    runBlocking {
+suspend fun sendData(ip: String, port: Int, file: List<ByteArray>){
+
         try {
             val selectorManager = SelectorManager(Dispatchers.IO)
             val socket = aSocket(selectorManager).udp().bind(InetSocketAddress("0.0.0.0", 5088))
 
-            launch(Dispatchers.IO) {
+
                 while (true)
                 {
                     val filename = sendingData.filename
@@ -40,6 +40,7 @@ fun sendData(ip: String, port: Int, file: List<ByteArray>){
 
                 for (i in 0..<file.size)
                 {
+                    delay(50)
                     socket.send(Datagram(ByteReadPacket(file[i]), InetSocketAddress(ip, port)))
                     println("$i пакет отправлен")
                     val packet = socket.receive()
@@ -55,7 +56,7 @@ fun sendData(ip: String, port: Int, file: List<ByteArray>){
                     }
                 }
                 socket.close()
-            }
+
         } catch (e:Exception) {
             println("Ошибка: "+ e.message)
         }
@@ -82,7 +83,7 @@ fun sendData(ip: String, port: Int, file: List<ByteArray>){
         }
          */
     }
-}
+
 
 fun recieveData(ip: String, port: Int, file: List<ByteArray>){
     runBlocking {

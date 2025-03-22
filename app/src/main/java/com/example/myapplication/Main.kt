@@ -13,7 +13,7 @@ import kotlinx.serialization.json.Json
 @Serializable
 data class Message(val nickname: String)
 
-fun createClient() {
+suspend fun createClient() {
     val client = HttpClient (CIO){
         install(SSE) {
             showCommentEvents()
@@ -27,23 +27,22 @@ fun createClient() {
         }
     }
 
-//    runBlocking {
-//        client.sse(host = "5.167.121.51", port = 2868, path = "/events") {
-//            while (true) {
-//                incoming.collect { event ->
-//                    println("Event from the server:")
-//                    //println(event.data)
-//                    val obj = decodeFromString<Message>(event.data!!)
-//
-//                    // Здесь будет проверка события. Если про нас, то создаём сокет с сервером по нужному порту
-//                    if (obj.nickname == "admin")
-//                    {
-//                        println("It's works!")
-//                    }
-//                }
-//            }
-//        }
-//    }
+        client.sse(host = "5.165.249.136", port = 2868, path = "/events") {
+            while (true)
+            {
+                incoming.collect { event ->
+                    println("Event from the server:")
+                    //println(event.data)
+                    val obj = decodeFromString<Message>(event.data!!)
 
-    //client.close()
+                    // Здесь будет проверка события. Если про нас, то создаём сокет с сервером по нужному порту
+                    if (obj.nickname == "admin")
+                    {
+                        println("It's works!")
+                    }
+                }
+            }
+        }
+
+    client.close()
 }

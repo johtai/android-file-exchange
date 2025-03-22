@@ -6,6 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.example.myapplication.Body
 import com.example.myapplication.sendingData
 import com.example.myapplication.ui.theme.MyApplicationTheme
 
@@ -16,7 +17,9 @@ fun LoadingDialog(onDismiss: () -> Unit) {
     var step by remember { mutableStateOf(0) }
 
     LaunchedEffect(Unit) {
-        sendingData.sendData()
+        //sendingData.sendData()
+        //sendingData.allPackages
+
         onDismiss() // Закрываем диалог после последнего шага
     }
 
@@ -64,7 +67,7 @@ fun LoadingDialog(isFinished: Boolean, onDismiss: () -> Unit) {
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Размер файла в байтах: ${sendingData.byteArray.size}")
+                Text("Размер файла в байтах: ${0}")
                 Text("Всего пакетов: ${sendingData.allPackages}")
                 Text("Количество отправленных: ${sendingData.sendingPackages}")
                 Text("Повторно запрошено: ${sendingData.requestedPackages}")

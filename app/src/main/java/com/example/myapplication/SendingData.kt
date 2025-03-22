@@ -7,7 +7,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
+import io.ktor.network.selector.SelectorManager
+import io.ktor.network.sockets.Datagram
+import io.ktor.network.sockets.InetSocketAddress
+import io.ktor.network.sockets.aSocket
+import io.ktor.utils.io.core.ByteReadPacket
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.io.readString
 import java.lang.Math.random
 import java.io.File
 
@@ -16,7 +23,7 @@ val MAX_FILE_SIZE:Int = 1024*1024*50 //50 МБ
 
 object sendingData {
     var filename = "Unknown"
-    lateinit var byteArray: List<ByteArray>
+    var byteArray: List<ByteArray> =  List<ByteArray>(size = 0, { byteArrayOf(3)})
     var allPackages by mutableIntStateOf(1)
     var sendingPackages by mutableIntStateOf(0)
     var requestedPackages by mutableIntStateOf(0)
@@ -41,14 +48,64 @@ object sendingData {
 
     }
 
-    suspend fun sendData(){
-        val MaxCountPackages: Int = 5
+    suspend fun sendData(ip: String, port: Int, file: List<ByteArray>){
+
         sendingPackages = 0
-        allPackages = 1 + (random() * MaxCountPackages).toInt()
-        while(sendingPackages < allPackages){
-            delay(1000)
-            sendingPackages++
+        allPackages = byteArray.size
+
+        try {
+            val selectorManager = SelectorManager(Dispatchers.IO)
+            val socket = aSocket(selectorManager).udp().bind(InetSocketAddress("0.0.0.0", 5088))
+
+
+            while (true)
+            {
+                val filename = sendingData.filename
+                socket.send(Datagram(ByteReadPacket(filename.encodeToByteArray()), InetSocketAddress(ip, port)))
+                val packet = socket.receive()
+                if (packet.packet.readString() == filename)
+                {
+                    println("Название дошло успешно")
+                    break;
+                }
+
+            }
+
+            while (true)
+            {
+                socket.send(Datagram(ByteReadPacket(file.size.toString().encodeToByteArray()), InetSocketAddress(ip, port)))
+                val packet = socket.receive()
+                if (packet.packet.readString() == file.size.toString())
+                {
+                    println("Размер (в пакетах) дошёл успешно")
+                    break;
+                }
+            }
+
+            for (i in 0..<file.size)
+            {
+                delay(50)
+                socket.send(Datagram(ByteReadPacket(file[i]), InetSocketAddress(ip, port)))
+                println("$i пакет отправлен")
+                ++sendingData.sendingPackages
+                val packet = socket.receive()
+                val message = packet.packet.readString()
+                if (message == i.toString())
+                {
+                    println("$i пакет дошёл до сервера")
+                }
+                else
+                {
+                    socket.send(Datagram(ByteReadPacket(file[i]), InetSocketAddress(ip, port)))
+                }
+            }
+            socket.close()
+
+        } catch (e:Exception) {
+            println("Ошибка: "+ e.message)
         }
+
+
     }
 
     fun splitFile(context: Context, path: String, chunkSize: Int = 1428): List<ByteArray> {

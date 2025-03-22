@@ -189,10 +189,18 @@ fun Body() {
                             showDialog = true
                             isFinished = false
                             scope.launch {
-                                sendData("5.165.249.136", 2869, sendingData.byteArray)
-                                sendingData.sendData()
-                                isFinished = true
+                                kotlin.runCatching {
+                                    //sendData("5.165.249.136", 2869, sendingData.byteArray)
+                                    sendingData.sendData("5.165.249.136", 2869, sendingData.byteArray)
+                                }.onSuccess {
+                                    println("end of sending data")
+                                    isFinished = true
+                                }.onFailure {
+                                    println("ERR")
+                                }
+
                             }
+
                         } catch (e:Exception) {
                             showDialog = false
                             scope.launch {
