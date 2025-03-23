@@ -11,4 +11,5 @@
     <color name="blue_head">#527095</color>
     <color name="blue_button">#324962</color>
     <color name="light_blue_button">#CEE1FB</color>
+    <color name="white_button">#F8F6FD</color>
 </resources>
