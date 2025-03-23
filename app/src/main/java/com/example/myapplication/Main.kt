@@ -31,7 +31,7 @@ suspend fun createClient() {
             while (true)
             {
                 incoming.collect { event ->
-                    println("Event from the server:")
+                    println("Event from SSE server:")
                     //println(event.data)
                     val obj = decodeFromString<Message>(event.data!!)
 

@@ -17,6 +17,7 @@ import kotlinx.coroutines.delay
 import kotlinx.io.readString
 import java.lang.Math.random
 import java.io.File
+import java.util.UUID
 
 
 val MAX_FILE_SIZE:Int = 1024*1024*50 //50 МБ
@@ -56,10 +57,19 @@ object sendingData {
         try {
             val selectorManager = SelectorManager(Dispatchers.IO)
             val socket = aSocket(selectorManager).udp().bind(InetSocketAddress("0.0.0.0", 5088))
+            val clientId = UUID.randomUUID().toString() // генерируем уникальный идентификатор
+
+            while(true){
+
+                socket.send(Datagram(packet = ByteReadPacket(clientId.encodeToByteArray()), address = InetSocketAddress(ip, port)))
+                println("packet with $clientId was sent")
+                break
+            }
 
 
             while (true)
             {
+
                 val filename = sendingData.filename
                 socket.send(Datagram(ByteReadPacket(filename.encodeToByteArray()), InetSocketAddress(ip, port)))
                 val packet = socket.receive()
@@ -84,7 +94,7 @@ object sendingData {
 
             for (i in 0..<file.size)
             {
-                delay(50)
+                delay(90)
                 socket.send(Datagram(ByteReadPacket(file[i]), InetSocketAddress(ip, port)))
                 println("$i пакет отправлен")
                 ++sendingData.sendingPackages
