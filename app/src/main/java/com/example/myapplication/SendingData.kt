@@ -19,6 +19,8 @@ object sendingData {
     var allPackages by mutableIntStateOf(1)
     var sendingPackages by mutableIntStateOf(0)
     var requestedPackages by mutableIntStateOf(0)
+    var address: String = ""
+    var port: Int = 0
 
     fun setData (context: Context, uri: Uri) {
         try {

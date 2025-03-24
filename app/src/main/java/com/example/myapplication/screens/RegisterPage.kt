@@ -130,18 +130,17 @@ fun RegisterScreen(navController: NavController) {
                 Text(text = stringResource(R.string.password))
             },
             isError = passwordErrorState.value,
-//            trailingIcon = {
-//                IconButton(onClick = {
-//                    passwordVisibility.value = !passwordVisibility.value
-//                }) {
-//                    Icon(
-//                        painter =  if (passwordVisibility.value) painterResource(R.drawable.),
-//                        imageVector = if (passwordVisibility.value) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-//                        contentDescription = "visibility",
-//                        tint = Color.Red
-//                    )
-//                }
-//            },
+            trailingIcon = {
+                IconButton(onClick = {
+                    passwordVisibility.value = !passwordVisibility.value
+                }) {
+                    Icon(
+                        painter =  if (passwordVisibility.value) painterResource(R.drawable.ic_visibility_off) else painterResource(R.drawable.ic_visibility),
+                        //imageVector = if (passwordVisibility.value) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                        contentDescription = "visibility"
+                    )
+                }
+            },
             visualTransformation = if (passwordVisibility.value) PasswordVisualTransformation() else VisualTransformation.None
         )
 
@@ -160,17 +159,17 @@ fun RegisterScreen(navController: NavController) {
             label = {
                 Text(text = stringResource(R.string.confirm_password))
             },
-//            trailingIcon = {
-//                IconButton(onClick = {
-//                    cPasswordVisibility.value = !cPasswordVisibility.value
-//                }) {
-//                    Icon(
-//                        imageVector = if (cPasswordVisibility.value) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-//                        contentDescription = "visibility",
-//                        tint = Color.Red
-//                    )
-//                }
-//            },
+            trailingIcon = {
+                IconButton(onClick = {
+                    cPasswordVisibility.value = !cPasswordVisibility.value
+                }) {
+                    Icon(
+                        painter =  if (passwordVisibility.value) painterResource(R.drawable.ic_visibility_off) else painterResource(R.drawable.ic_visibility),
+                        //imageVector = if (cPasswordVisibility.value) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                        contentDescription = "visibility",
+                    )
+                }
+            },
             visualTransformation = if (cPasswordVisibility.value) PasswordVisualTransformation() else VisualTransformation.None
         )
         if (confirmPasswordErrorState.value) {

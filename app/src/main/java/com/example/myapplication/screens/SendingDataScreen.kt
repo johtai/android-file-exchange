@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -84,7 +86,7 @@ fun FilePickerScreen(scope: CoroutineScope, snackbarHostState: SnackbarHostState
             onClick = {
                 filePickerLauncher.launch(arrayOf("*/*"))
             },
-            modifier = Modifier.size(180.dp, 50.dp)
+            modifier = Modifier.size(200.dp, 50.dp),
             ) {
             Text(
                 stringResource(R.string.choose_file),
@@ -93,6 +95,8 @@ fun FilePickerScreen(scope: CoroutineScope, snackbarHostState: SnackbarHostState
                 color = colorResource(R.color.grey_text),
                 fontWeight = FontWeight.Bold
             )
+            Spacer(modifier = Modifier.width(8.dp))
+            Icon(painter = painterResource(R.drawable.baseline_attach_file_24), contentDescription = "Скрепочка")
         }
 
         Spacer(modifier = Modifier.height(10.dp))

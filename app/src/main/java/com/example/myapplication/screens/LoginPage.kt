@@ -25,8 +25,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.*
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
@@ -73,6 +75,7 @@ fun LoginScreen(navController: NavController) {
 
         val username = remember { mutableStateOf(TextFieldValue()) }
         val password = remember { mutableStateOf(TextFieldValue()) }
+        val passwordVisibility = remember { mutableStateOf(true) }
 
         Text(text = stringResource(R.string.login_head_text),
             fontFamily = HeadingFont,
@@ -80,18 +83,33 @@ fun LoginScreen(navController: NavController) {
             fontSize = 7.em)
 
         Spacer(modifier = Modifier.height(20.dp))
-        TextField(
+        OutlinedTextField(
             label = { Text(text = stringResource(R.string.login_mes)) },
             value = username.value,
             onValueChange = { username.value = it })
 
         Spacer(modifier = Modifier.height(20.dp))
-        TextField(
-            label = { Text(text = stringResource(R.string.password_mes)) },
+        OutlinedTextField(
             value = password.value,
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            onValueChange = { password.value = it })
+            onValueChange = {
+                password.value = it
+            },
+            label = {
+                Text(text = stringResource(R.string.password))
+            },
+            trailingIcon = {
+                IconButton(onClick = {
+                    passwordVisibility.value = !passwordVisibility.value
+                }) {
+                    Icon(
+                        painter =  if (passwordVisibility.value) painterResource(R.drawable.ic_visibility_off) else painterResource(R.drawable.ic_visibility),
+                        //imageVector = if (passwordVisibility.value) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                        contentDescription = "visibility",
+                    )
+                }
+            },
+            visualTransformation = if (passwordVisibility.value) PasswordVisualTransformation() else VisualTransformation.None
+        )
 
         Spacer(modifier = Modifier.height(20.dp))
         Box(modifier = Modifier.padding(40.dp, 0.dp, 40.dp, 0.dp)) {
@@ -112,8 +130,7 @@ fun LoginScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(20.dp))
         Box(contentAlignment = Alignment.BottomCenter) {
-            ClickableText(
-                text = AnnotatedString(stringResource(R.string.to_regist)),
+            TextButton(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(20.dp),
@@ -122,14 +139,15 @@ fun LoginScreen(navController: NavController) {
                         popUpTo(navController.graph.startDestinationId)
                         launchSingleTop = true
                     }
-                },
-                style = TextStyle(
+                },)
+            {
+                Text(text = AnnotatedString(stringResource(R.string.to_regist)), style = TextStyle(
                     fontSize = 14.sp,
                     fontFamily = FontFamily.Default,
                     textDecoration = TextDecoration.Underline,
                     color = colorResource(R.color.purple_200)
-                )
-            )
+                ))
+            }
         }
 //        ClickableText(
 //            text = AnnotatedString("Forgot password?"),
