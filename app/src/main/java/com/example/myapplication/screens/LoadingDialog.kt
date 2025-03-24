@@ -9,8 +9,11 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.R
+import androidx.compose.ui.window.Dialog
 import com.example.myapplication.sendingData
 import com.example.myapplication.ui.theme.MyApplicationTheme
+
+
 
 @Composable
 fun LoadingDialog(isFinished: Boolean, onDismiss: () -> Unit) {

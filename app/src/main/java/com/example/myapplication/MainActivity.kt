@@ -43,5 +43,3 @@ fun LoginAndRegistration() {
         composable(Routes.Send.route, content = { SendingDataScreen() })
     })
 }
-
-
