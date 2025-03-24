@@ -191,7 +191,7 @@ fun SendingDataScreen() {
                                 if (sendingData.filename == "") {
                                     throw Exception("Сначала выберите файл")
                                 }
-                                sendingData.sendData()
+                                sendingData.sendData(ipAddress, port.toInt())
                                 isFinished = true
                             }.onFailure { e ->
                                 showDialog = false

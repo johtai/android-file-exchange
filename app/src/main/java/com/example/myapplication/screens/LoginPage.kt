@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.*
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.res.colorResource
@@ -38,12 +39,14 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.R
+import com.example.myapplication.loginResponse
+import kotlinx.coroutines.launch
 
 
 @Composable
 fun PasswordTextField(field: String, onValueChange: (String) -> Unit, text: String) {
 
-    var passwordVisible by remember { mutableStateOf(false) }
+    val passwordVisible by remember { mutableStateOf(false) }
 
     OutlinedTextField(
         value = field,
@@ -65,6 +68,9 @@ fun PasswordTextField(field: String, onValueChange: (String) -> Unit, text: Stri
 
 @Composable
 fun LoginScreen(navController: NavController) {
+
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Column(
         modifier = Modifier.padding(20.dp)
@@ -114,9 +120,24 @@ fun LoginScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(20.dp))
         Box(modifier = Modifier.padding(40.dp, 0.dp, 40.dp, 0.dp)) {
             Button(
-                onClick = { navController.navigate(Routes.Send.route){
-                    popUpTo(navController.graph.startDestinationId)
-                    launchSingleTop = true
+                onClick = {
+                    scope.launch {
+                        try {
+                            val success = loginResponse(username.toString(), password.toString())
+                            if (success) {
+                                navController.navigate(Routes.Send.route){
+                                    popUpTo(navController.graph.startDestinationId)
+                                    launchSingleTop = true
+                                }
+                            }
+                        } catch (e:Exception){
+                            snackbarHostState.showSnackbar(
+                                message = e.message.toString(),
+                                actionLabel = "Закрыть",
+                                duration = SnackbarDuration.Indefinite
+                            )
+                        }
+
                 } },
                 shape = RoundedCornerShape(50.dp),
                 modifier = Modifier

@@ -37,7 +37,7 @@ fun loadRefreshToken(): String {
 }
 
 suspend fun refreshToken(): Pair<String, String>? {
-    val response: HttpResponse = client.post("https://your-server.com/refresh") {
+    val response: HttpResponse = client.post("http://5.165.249.136:2868/refresh") {
         contentType(io.ktor.http.ContentType.Application.Json)
         setBody(mapOf("refreshToken" to loadRefreshToken()))
     }

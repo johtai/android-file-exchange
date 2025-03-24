@@ -21,11 +21,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MenuItemColors
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -46,20 +49,24 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.R
+import com.example.myapplication.loginResponse
 import com.example.myapplication.ui.theme.MyApplicationTheme
+import kotlinx.coroutines.launch
 
 @Composable
 fun RegisterScreen(navController: NavController) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
     val name = remember {
         mutableStateOf(TextFieldValue())
     }
-    val email = remember { mutableStateOf(TextFieldValue()) }
+    //val email = remember { mutableStateOf(TextFieldValue()) }
     val password = remember { mutableStateOf(TextFieldValue()) }
     val confirmPassword = remember { mutableStateOf(TextFieldValue()) }
 
     val nameErrorState = remember { mutableStateOf(false) }
-    val emailErrorState = remember { mutableStateOf(false) }
+    //val emailErrorState = remember { mutableStateOf(false) }
     val passwordErrorState = remember { mutableStateOf(false) }
     val confirmPasswordErrorState = remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
@@ -100,21 +107,21 @@ fun RegisterScreen(navController: NavController) {
         )
         Spacer(Modifier.size(16.dp))
 
-        OutlinedTextField(
-            value = email.value,
-            onValueChange = {
-                if (emailErrorState.value) {
-                    emailErrorState.value = false
-                }
-                email.value = it
-            },
-
-            modifier = Modifier.fillMaxWidth(),
-            isError = emailErrorState.value,
-            label = {
-                Text(text = stringResource(R.string.email))
-            },
-        )
+//        OutlinedTextField(
+//            value = email.value,
+//            onValueChange = {
+//                if (emailErrorState.value) {
+//                    emailErrorState.value = false
+//                }
+//                email.value = it
+//            },
+//
+//            modifier = Modifier.fillMaxWidth(),
+//            isError = emailErrorState.value,
+//            label = {
+//                Text(text = stringResource(R.string.email))
+//            },
+//        )
         Spacer(Modifier.size(16.dp))
         val passwordVisibility = remember { mutableStateOf(true) }
         OutlinedTextField(
@@ -184,10 +191,10 @@ fun RegisterScreen(navController: NavController) {
                     name.value.text.isEmpty() -> {
                         nameErrorState.value = true
                     }
-
-                    email.value.text.isEmpty() -> {
-                        emailErrorState.value = true
-                    }
+//
+//                    email.value.text.isEmpty() -> {
+//                        emailErrorState.value = true
+//                    }
 
                     password.value.text.isEmpty() -> {
                         passwordErrorState.value = true
@@ -202,15 +209,29 @@ fun RegisterScreen(navController: NavController) {
                     }
 
                     else -> {
-                        Toast.makeText(
-                            context,
-                            "Пользователь успешно зарегистрирован",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        scope.launch {
+                            try {
+                                val success = loginResponse(name.toString(), password.toString())
+                                if (success) {
+                                    Toast.makeText(
+                                        context,
+                                        "Пользователь успешно зарегистрирован",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
 
-                        navController.navigate(Routes.Login.route) {
-                            popUpTo(navController.graph.startDestinationId)
-                            launchSingleTop = true
+                                    navController.navigate(Routes.Login.route) {
+                                        popUpTo(navController.graph.startDestinationId)
+                                        launchSingleTop = true
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                snackbarHostState.showSnackbar(
+                                    message = e.message.toString(),
+                                    actionLabel = "Закрыть",
+                                    duration = SnackbarDuration.Indefinite
+                                )
+                            }
+
                         }
                     }
                 }

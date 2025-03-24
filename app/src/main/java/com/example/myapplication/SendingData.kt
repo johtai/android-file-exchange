@@ -16,8 +16,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.io.readByteArray
 import kotlinx.io.readString
-import java.lang.Math.random
-import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID
 
@@ -53,7 +51,7 @@ object sendingData {
 
     }
 
-    suspend fun sendData(ip: String, port: Int, file: List<ByteArray>){
+    suspend fun sendData(ip: String, port: Int){
 
         sendingPackages = 0
         allPackages = byteArray.size
@@ -84,19 +82,19 @@ object sendingData {
 
             while (true)
             {
-                socket.send(Datagram(ByteReadPacket(file.size.toString().encodeToByteArray()), InetSocketAddress(ip, port)))
+                socket.send(Datagram(ByteReadPacket(byteArray.size.toString().encodeToByteArray()), InetSocketAddress(ip, port)))
                 val packet = socket.receive()
-                if (packet.packet.readString() == file.size.toString())
+                if (packet.packet.readString() == byteArray.size.toString())
                 {
                     println("Размер (в пакетах) дошёл успешно")
                     break;
                 }
             }
 
-            for (i in 0..<file.size)
+            for (i in 0..<byteArray.size)
             {
                 delay(90)
-                socket.send(Datagram(ByteReadPacket(file[i]), InetSocketAddress(ip, port)))
+                socket.send(Datagram(ByteReadPacket(byteArray[i]), InetSocketAddress(ip, port)))
                 println("$i пакет отправлен")
                 ++sendingData.sendingPackages
                 val packet = socket.receive()
@@ -107,7 +105,7 @@ object sendingData {
                 }
                 else
                 {
-                    socket.send(Datagram(ByteReadPacket(file[i]), InetSocketAddress(ip, port)))
+                    socket.send(Datagram(ByteReadPacket(byteArray[i]), InetSocketAddress(ip, port)))
                 }
             }
             socket.close()

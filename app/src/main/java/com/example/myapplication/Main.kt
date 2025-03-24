@@ -15,11 +15,14 @@ import kotlinx.serialization.json.Json.Default.decodeFromString
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.request.url
 import io.ktor.client.statement.HttpResponse
+import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.*
+import io.ktor.utils.io.InternalAPI
 import kotlinx.serialization.json.Json
 
 @Serializable
@@ -72,4 +75,41 @@ suspend fun createClient() {
     }
 
     client.close()
+}
+
+
+@OptIn(InternalAPI::class)
+suspend fun loginResponse(username:String, password: String): Boolean {
+    val response: HttpResponse = client.post {
+        url("http://5.165.249.136:2868/login")
+        contentType(io.ktor.http.ContentType.Application.Json)
+        body = setBody(mapOf("username" to username, "password" to password))
+    }
+
+    return if (response.status == HttpStatusCode.OK){
+        val responseBody = response.body<Map<String, String>>()
+        val accessToken = responseBody["accessToken"]
+        val refreshToken = responseBody["refreshToken"]
+
+        if (accessToken != null && refreshToken != null) {
+            TokenStorage.saveToken("accessToken", accessToken)
+            TokenStorage.saveToken("refreshToken", refreshToken)
+            true
+        } else {
+            false
+        }
+    }
+    else
+        false
+}
+
+
+@OptIn(InternalAPI::class)
+suspend fun registResponse(username:String, password: String): Boolean {
+    val response: HttpResponse = client.post {
+        url("http://5.165.249.136:2868/regist")
+        contentType(io.ktor.http.ContentType.Application.Json)
+        body = setBody(mapOf("username" to username, "password" to password))
+    }
+    return response.status == HttpStatusCode.Created
 }
