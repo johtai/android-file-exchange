@@ -14,9 +14,11 @@ import io.ktor.network.sockets.aSocket
 import io.ktor.utils.io.core.ByteReadPacket
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.io.readByteArray
 import kotlinx.io.readString
 import java.lang.Math.random
 import java.io.File
+import java.io.FileOutputStream
 import java.util.UUID
 
 
@@ -59,8 +61,7 @@ object sendingData {
             val socket = aSocket(selectorManager).udp().bind(InetSocketAddress("0.0.0.0", 5088))
             val clientId = UUID.randomUUID().toString() // генерируем уникальный идентификатор
 
-            while(true){
-
+            while(true) {
                 socket.send(Datagram(packet = ByteReadPacket(clientId.encodeToByteArray()), address = InetSocketAddress(ip, port)))
                 println("packet with $clientId was sent")
                 break
@@ -69,7 +70,6 @@ object sendingData {
 
             while (true)
             {
-
                 val filename = sendingData.filename
                 socket.send(Datagram(ByteReadPacket(filename.encodeToByteArray()), InetSocketAddress(ip, port)))
                 val packet = socket.receive()
@@ -78,7 +78,6 @@ object sendingData {
                     println("Название дошло успешно")
                     break;
                 }
-
             }
 
             while (true)
@@ -114,9 +113,70 @@ object sendingData {
         } catch (e:Exception) {
             println("Ошибка: "+ e.message)
         }
-
-
     }
+
+    suspend fun receiveData(ip: String, port: Int){
+        filename = "Unknown"
+        byteArray = List<ByteArray>(size = 0, { byteArrayOf(3)})
+        allPackages = 0
+        sendingPackages = 0
+        requestedPackages = 0
+        val selectorManager = SelectorManager(Dispatchers.IO)
+        val socket = aSocket(selectorManager).udp().bind(InetSocketAddress("0.0.0.0", 5089))
+
+        socket.send(
+            Datagram(
+                packet = ByteReadPacket(array = "Здесь будет JVT токен".encodeToByteArray()),
+                address = InetSocketAddress(ip, port)
+            )
+        )
+        var packet = socket.receive()
+        filename = packet.packet.readString()
+        socket.send(
+            Datagram(
+                packet = ByteReadPacket(array = filename.encodeToByteArray()),
+                address = packet.address
+            )
+        )
+        println("File name received: $filename")
+
+        packet = socket.receive()
+        val messageCount = packet.packet.readString()
+        socket.send(
+            Datagram(
+                packet = ByteReadPacket(array = messageCount.encodeToByteArray()),
+                address = packet.address
+            )
+        )
+        println("messageCount: $messageCount")
+
+        val listBytes = mutableListOf<ByteArray>()
+
+        for (i in 0 ..<messageCount.toInt()) {
+            packet = socket.receive()
+            println("packet:$packet")
+            val numMessage = packet.packet.readByteArray(4)
+            val numOfPacket = (numMessage[3].toInt() shl 24) or
+                    (numMessage[2].toInt() and 0xff shl 16) or
+                    (numMessage[1].toInt() and 0xff shl 8) or
+                    (numMessage[0].toInt() and 0xff)
+
+            val dataMessage = packet.packet.readByteArray()
+
+            println("nop:$numOfPacket")
+            listBytes.add(dataMessage)
+            socket.send(
+                Datagram(
+                    packet = ByteReadPacket(
+                        array = numOfPacket.toString().encodeToByteArray()
+                    ), address = packet.address
+                )
+            )
+        }
+        socket.close()
+        saveFile(filename, listBytes)
+    }
+
 
     fun splitFile(context: Context, path: String, chunkSize: Int = 1428): List<ByteArray> {
         //val file = File(path)
@@ -140,5 +200,12 @@ object sendingData {
             }
         }
         return parts
+    }
+
+    fun saveFile(filename:String, listByteArray: List<ByteArray>)  {
+        val file = FileOutputStream(filename)
+        for (i in listByteArray)
+            file.write(i)
+        file.close()
     }
 }

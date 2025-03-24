@@ -60,75 +60,63 @@ suspend fun sendData(ip: String, port: Int, file: List<ByteArray>){
         } catch (e:Exception) {
             println("Ошибка: "+ e.message)
         }
-
-        /*
-
-        launch(Dispatchers.IO) {
-            while (true) {
-                socket.send(Datagram(ByteReadPacket(file[i]), InetSocketAddress(ip, port))) // Нужно поделить файл так, чтобы в дейтаграмме было место для номера
-                do {
-                    val packet = socket.receive()
-                    val message = packet.packet
-                    if (true) // если пришёл в ответ целый пакет с номером, то ок (потом будет асинхронность)
-                    {
-                        ++i;
-                        break;
-                    }
-                    else
-                    {
-                        socket.send(Datagram(ByteReadPacket(file[i]), InetSocketAddress(ip, port)))
-                    }
-                } while(true)
-            }
-        }
-         */
     }
 
 
-fun recieveData(ip: String, port: Int, file: List<ByteArray>){
-    runBlocking {
-        val selectorManager = SelectorManager(Dispatchers.IO)
-        val socket = aSocket(selectorManager).udp().bind(InetSocketAddress(ip, port))
+suspend fun receiveData(ip: String, port: Int){
+    val selectorManager = SelectorManager(Dispatchers.IO)
+    val socket = aSocket(selectorManager).udp().bind(InetSocketAddress("0.0.0.0", 5089))
 
-        launch(Dispatchers.IO) {
-            while (true) {
-                val packet = socket.receive()
-                val message = packet.packet
-                if (true) // если пришёл целый пакет с номером, то ок (потом будет асинхронность)
-                {
-                    // добавление в файл
-                    socket.send(Datagram(ByteReadPacket("Здесь должен быть номер".encodeToByteArray()), InetSocketAddress(ip, port)))
-                }
-            }
-        }
+    socket.send(
+        Datagram(
+            packet = ByteReadPacket(array = "Tvoy batya".encodeToByteArray()),
+            address = InetSocketAddress(ip, port)
+        )
+    )
+    var packet = socket.receive()
+    var fileName = packet.packet.readString()
+    socket.send(
+        Datagram(
+            packet = ByteReadPacket(array = fileName.encodeToByteArray()),
+            address = packet.address
+        )
+    )
+    println("File name received: $fileName")
+
+    packet = socket.receive()
+    println("second packet")
+    val messageCount = packet.packet.readString()
+    socket.send(
+        Datagram(
+            packet = ByteReadPacket(array = messageCount.encodeToByteArray()),
+            address = packet.address
+        )
+    )
+    println("messageCount: $messageCount")
+
+    val listBytes = mutableListOf<ByteArray>()
+
+    for (i in 0 ..<messageCount.toInt()) {
+        packet = socket.receive()
+        println("packet:$packet")
+        val numMessage = packet.packet.readByteArray(4)
+        val numOfPacket = (numMessage[3].toInt() shl 24) or
+                (numMessage[2].toInt() and 0xff shl 16) or
+                (numMessage[1].toInt() and 0xff shl 8) or
+                (numMessage[0].toInt() and 0xff)
+
+        val dataMessage = packet.packet.readByteArray()
+
+        println("nop:$numOfPacket")
+        listBytes.add(dataMessage)
+        socket.send(
+            Datagram(
+                packet = ByteReadPacket(
+                    array = numOfPacket.toString().encodeToByteArray()
+                ), address = packet.address
+            )
+        )
     }
+    socket.close()
+    sendingData.saveFile(fileName, listBytes)
 }
-
-/*
-runBlocking {
-        val selectorManager = SelectorManager(Dispatchers.IO)
-        val socket = aSocket(selectorManager).tcp().connect(ip, port)
-
-        val receiveChannel = socket.openReadChannel()
-        val sendChannel = socket.openWriteChannel(autoFlush = true)
-
-        launch(Dispatchers.IO) {
-            while (true) {
-                val greeting = receiveChannel.readUTF8Line() // Получение данных
-                if (greeting != null) {
-                    println(greeting)  // Здесь нужно сделать сохранение файла
-                } else {
-                    println("Сервер закрыл соединение")
-                    socket.close()
-                    selectorManager.close()
-                    exitProcess(0)
-                }
-            }
-        }
-
-        //while (true) { // нужно другое условие
-            val myMessage = readln() // Передаём фрагмент файла
-            sendChannel.writeStringUtf8("$myMessage\n")
-        //}
-    }
- */

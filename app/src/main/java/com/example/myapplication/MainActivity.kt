@@ -190,7 +190,6 @@ fun Body() {
                             isFinished = false
                             scope.launch {
                                 kotlin.runCatching {
-                                    //sendData("5.165.249.136", 2869, sendingData.byteArray)
                                     sendingData.sendData("5.165.249.136", 2869, sendingData.byteArray)
                                 }.onSuccess {
                                     println("end of sending data")

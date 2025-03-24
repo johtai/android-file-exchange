@@ -27,22 +27,23 @@ suspend fun createClient() {
         }
     }
 
-        client.sse(host = "5.165.249.136", port = 2868, path = "/events") {
-            while (true)
-            {
-                incoming.collect { event ->
-                    println("Event from SSE server:")
-                    //println(event.data)
-                    val obj = decodeFromString<Message>(event.data!!)
+    client.sse(host = "5.165.249.136", port = 2868, path = "/events") {
+        while (true)
+        {
+            incoming.collect { event ->
+                //println("Event from SSE server:")
+                //println(event.data)
+                val obj = decodeFromString<Message>(event.data!!)
 
-                    // Здесь будет проверка события. Если про нас, то создаём сокет с сервером по нужному порту
-                    if (obj.nickname == "admin")
-                    {
-                        println("It's works!")
-                    }
+                // Здесь будет проверка события. Если про нас, то создаём сокет с сервером по нужному порту
+                if (obj.nickname == "admin")
+                {
+                    sendingData.receiveData("5.165.249.136", 2869)
+                    client.close()
                 }
             }
         }
+    }
 
     client.close()
 }
