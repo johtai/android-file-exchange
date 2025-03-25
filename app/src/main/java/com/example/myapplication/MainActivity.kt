@@ -36,10 +36,11 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun LoginAndRegistration() {
     val navController = rememberNavController()
+    val beggingScreen = if(loadAccessToken() == "")  Routes.Login.route else Routes.Send.route
 
-    NavHost(navController = navController, startDestination = Routes.Login.route, builder = {
-        composable(Routes.Login.route, content =  { LoginScreen(navController = navController) })
-        composable(Routes.Regist.route, content = { RegisterScreen(navController = navController) })
-        composable(Routes.Send.route, content = { SendingDataScreen() })
+    NavHost(navController = navController, startDestination = beggingScreen, builder = {
+        composable(Routes.Login.route, content =  { LoginScreen(navController) })
+        composable(Routes.Regist.route, content = { RegisterScreen(navController) })
+        composable(Routes.Send.route, content = { SendingDataScreen(navController) })
     })
 }

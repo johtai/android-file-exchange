@@ -55,7 +55,6 @@ object sendingData {
 
         sendingPackages = 0
         allPackages = byteArray.size
-
         try {
             val selectorManager = SelectorManager(Dispatchers.IO)
             val socket = aSocket(selectorManager).udp().bind(InetSocketAddress("0.0.0.0", 5088))
@@ -177,8 +176,14 @@ object sendingData {
         saveFile(filename, listBytes)
     }
 
+    fun isDataValid(path:String){
+        if(path == "")
+            throw Exception("Сначала выберите файл")
+
+    }
 
     fun splitFile(context: Context, path: String, chunkSize: Int = 1428): List<ByteArray> {
+
         //val file = File(path)
         val parts = mutableListOf<ByteArray>()
         val buffer = ByteArray(chunkSize)

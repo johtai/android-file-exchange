@@ -14,7 +14,6 @@ import com.example.myapplication.sendingData
 import com.example.myapplication.ui.theme.MyApplicationTheme
 
 
-
 @Composable
 fun LoadingDialog(isFinished: Boolean, onDismiss: () -> Unit) {
 
@@ -22,12 +21,10 @@ fun LoadingDialog(isFinished: Boolean, onDismiss: () -> Unit) {
         onDismissRequest = { },
         confirmButton = {
             if (isFinished) {
-                Button(onClick = onDismiss,
-                    colors = ButtonColors(
-                        containerColor = colorResource(R.color.blue_button),
-                        contentColor = ButtonDefaults.buttonColors().contentColor,
-                        disabledContainerColor = ButtonDefaults.buttonColors().disabledContainerColor,
-                        disabledContentColor = ButtonDefaults.buttonColors().disabledContentColor
+                Button(
+                    onClick = onDismiss,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colorResource(R.color.blue_button)
                     )
                 ) {
                     Text("ОК")
@@ -40,8 +37,10 @@ fun LoadingDialog(isFinished: Boolean, onDismiss: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.Start
             ) {
-                Box(modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
                     if (!isFinished) {
                         CircularProgressIndicator()
                     } else {
@@ -65,6 +64,6 @@ fun GreetingPreview() {
     MyApplicationTheme {
         var showDialog by remember { mutableStateOf(false) }
         var isFinished by remember { mutableStateOf(true) }
-        LoadingDialog(isFinished, {showDialog = false})
+        LoadingDialog(isFinished, { showDialog = false })
     }
 }

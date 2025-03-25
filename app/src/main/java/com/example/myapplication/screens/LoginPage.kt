@@ -12,7 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -23,10 +22,9 @@ import androidx.compose.ui.unit.em
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.*
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -39,38 +37,18 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.R
+import com.example.myapplication.hello
 import com.example.myapplication.loginResponse
+import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.launch
 
-
-@Composable
-fun PasswordTextField(field: String, onValueChange: (String) -> Unit, text: String) {
-
-    val passwordVisible by remember { mutableStateOf(false) }
-
-    OutlinedTextField(
-        value = field,
-        onValueChange = onValueChange,
-        label = { Text(text) },
-        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Password),
-        trailingIcon = {
-           // val icon = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility
-//            IconButton(onClick = { passwordVisible = !passwordVisible }) {
-//                Icon(imageVector = icon, contentDescription = "Показать/скрыть пароль")
-//            }
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    )
-}
 
 @Composable
 fun LoginScreen(navController: NavController) {
 
     val scope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
+    var showDialog by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier.padding(20.dp)
@@ -79,8 +57,8 @@ fun LoginScreen(navController: NavController) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        val username = remember { mutableStateOf(TextFieldValue()) }
-        val password = remember { mutableStateOf(TextFieldValue()) }
+        val username = remember { mutableStateOf(TextFieldValue("Lovak")) }
+        val password = remember { mutableStateOf(TextFieldValue("BestUser03")) }
         val passwordVisibility = remember { mutableStateOf(true) }
 
         Text(text = stringResource(R.string.login_head_text),
@@ -121,21 +99,22 @@ fun LoginScreen(navController: NavController) {
         Box(modifier = Modifier.padding(40.dp, 0.dp, 40.dp, 0.dp)) {
             Button(
                 onClick = {
+                    showDialog = true
                     scope.launch {
                         try {
-                            val success = loginResponse(username.toString(), password.toString())
-                            if (success) {
+                            val status = loginResponse(username.value.text, password.value.text)
+                            if (status == HttpStatusCode.OK) {
+                                showDialog = false
+                                errorMessage = ""
                                 navController.navigate(Routes.Send.route){
                                     popUpTo(navController.graph.startDestinationId)
                                     launchSingleTop = true
                                 }
                             }
+
                         } catch (e:Exception){
-                            snackbarHostState.showSnackbar(
-                                message = e.message.toString(),
-                                actionLabel = "Закрыть",
-                                duration = SnackbarDuration.Indefinite
-                            )
+                            errorMessage = e.message.toString()
+                            showDialog = false
                         }
 
                 } },
@@ -170,6 +149,7 @@ fun LoginScreen(navController: NavController) {
                 ))
             }
         }
+
 //        ClickableText(
 //            text = AnnotatedString("Forgot password?"),
 //            onClick = { },
@@ -179,6 +159,58 @@ fun LoginScreen(navController: NavController) {
 //            )
 //        )
     }
+//    if(showDialog){
+//        LoadingLoginDialog(onDismiss = {showDialog = false}, errorMessage)
+//    }
+}
+
+
+@Composable
+fun LoadingLoginDialog(
+    onDismiss: () -> Unit,
+    errorMessage: String
+) {
+
+    AlertDialog(
+        onDismissRequest = { },
+        confirmButton = {
+            if (errorMessage != "") {
+                Button(
+                    onClick = onDismiss,
+                    colors = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.blue_button))
+                ) {
+                    Text("ОК")
+                }
+            }
+        },
+        title = {
+            Text(
+                text =
+                if (errorMessage == "")
+                    "Вход..."
+                else
+                    "Ошибка"
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.Start
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (errorMessage == "") {
+                        CircularProgressIndicator()
+                    } else {
+                        Text(errorMessage)
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+        }
+    )
 }
 
 @Preview(showBackground = true)

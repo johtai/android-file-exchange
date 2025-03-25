@@ -21,6 +21,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -48,8 +49,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.MAX_FILE_SIZE
 import com.example.myapplication.R
+import com.example.myapplication.TokenStorage
+import com.example.myapplication.hello
+import com.example.myapplication.refreshToken
 import com.example.myapplication.sendingData
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import kotlinx.coroutines.CoroutineScope
@@ -117,10 +124,19 @@ fun getFileSize(context: Context, uri: Uri): Long? {
         }
 }
 
+fun onLogoutClick(navController: NavController){
+    TokenStorage.deleteToken("accessToken")
+    TokenStorage.deleteToken("refreshToken")
+
+    navController.navigate(Routes.Login.route){
+        popUpTo(navController.graph.startDestinationId)
+        launchSingleTop = true
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SendingDataScreen() {
+fun SendingDataScreen(navController: NavController) {
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     var ipAddress by remember { mutableStateOf("5.167.121.51") }
@@ -139,7 +155,15 @@ fun SendingDataScreen() {
                         fontSize = 7.em
                     )
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = colorResource(R.color.blue_head))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = colorResource(R.color.blue_head)),
+                actions = {
+                    IconButton(onClick = {onLogoutClick(navController)}) {
+                        Icon(
+                            painter = painterResource(R.drawable.baseline_arrow_outward_24),
+                            contentDescription = "Logout"
+                        )
+                    }
+                }
             )
         },
         snackbarHost = {
@@ -153,6 +177,7 @@ fun SendingDataScreen() {
                 .padding(innerPadding),
             horizontalAlignment = Alignment.Start,
         ) {
+
 
             Text(
                 stringResource(R.string.heading_server),
@@ -176,6 +201,23 @@ fun SendingDataScreen() {
             FilePickerScreen(scope, snackbarHostState)
 
 
+            Button(onClick = {
+                scope.launch {
+                    val res = hello()
+                    println(res.description)
+                }
+            },)
+            {
+                Text("/hello")
+            }
+            Button(onClick = {
+                scope.launch {
+                    val res = refreshToken()
+                }
+            },)
+            {
+                Text("/refresh")
+            }
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -188,7 +230,7 @@ fun SendingDataScreen() {
                         isFinished = false
                         scope.launch {
                             runCatching {
-                                if (sendingData.filename == "") {
+                                if (sendingData.filename == "Unknown") {
                                     throw Exception("Сначала выберите файл")
                                 }
                                 sendingData.sendData(ipAddress, port.toInt())
@@ -215,7 +257,9 @@ fun SendingDataScreen() {
                 }
             }
         }
+
     }
+
 
     if (showDialog) {
         LoadingDialog(isFinished = isFinished, onDismiss = { showDialog = false })
@@ -227,6 +271,7 @@ fun SendingDataScreen() {
 @Composable
 fun SendPreview() {
     MyApplicationTheme {
-        SendingDataScreen()
+
+        SendingDataScreen(rememberNavController())
     }
 }

@@ -1,8 +1,5 @@
 package com.example.myapplication.screens
 
-import android.content.Context
-import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,15 +7,16 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MenuItemColors
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarDuration
@@ -26,9 +24,11 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,21 +36,20 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.myapplication.Message
 import com.example.myapplication.R
-import com.example.myapplication.loginResponse
+import com.example.myapplication.registResponse
 import com.example.myapplication.ui.theme.MyApplicationTheme
+import io.ktor.http.HttpStatusCode
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -58,18 +57,22 @@ fun RegisterScreen(navController: NavController) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-    val name = remember {
-        mutableStateOf(TextFieldValue())
+    val name = remember {                                           //Lovak
+        mutableStateOf(TextFieldValue("Lovak2"))
     }
     //val email = remember { mutableStateOf(TextFieldValue()) }
-    val password = remember { mutableStateOf(TextFieldValue()) }
-    val confirmPassword = remember { mutableStateOf(TextFieldValue()) }
+    val password = remember { mutableStateOf(TextFieldValue("BestUser03")) }    //BestUser03
+    val confirmPassword = remember { mutableStateOf(TextFieldValue("BestUser03")) }
 
     val nameErrorState = remember { mutableStateOf(false) }
     //val emailErrorState = remember { mutableStateOf(false) }
     val passwordErrorState = remember { mutableStateOf(false) }
     val confirmPasswordErrorState = remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
+
+    var showDialog by remember { mutableStateOf(false) }
+    var isFinished by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -80,8 +83,10 @@ fun RegisterScreen(navController: NavController) {
     ) {
 
 
-        Box(modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.Center) {
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
             Text(
                 text = stringResource(R.string.regist_head_text),
                 fontSize = 30.sp,
@@ -105,8 +110,7 @@ fun RegisterScreen(navController: NavController) {
                 Text(text = stringResource(R.string.user_name))
             },
         )
-        Spacer(Modifier.size(16.dp))
-
+        //Spacer(Modifier.size(16.dp))
 //        OutlinedTextField(
 //            value = email.value,
 //            onValueChange = {
@@ -142,7 +146,9 @@ fun RegisterScreen(navController: NavController) {
                     passwordVisibility.value = !passwordVisibility.value
                 }) {
                     Icon(
-                        painter =  if (passwordVisibility.value) painterResource(R.drawable.ic_visibility_off) else painterResource(R.drawable.ic_visibility),
+                        painter = if (passwordVisibility.value) painterResource(R.drawable.ic_visibility_off) else painterResource(
+                            R.drawable.ic_visibility
+                        ),
                         //imageVector = if (passwordVisibility.value) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                         contentDescription = "visibility"
                     )
@@ -171,7 +177,9 @@ fun RegisterScreen(navController: NavController) {
                     cPasswordVisibility.value = !cPasswordVisibility.value
                 }) {
                     Icon(
-                        painter =  if (passwordVisibility.value) painterResource(R.drawable.ic_visibility_off) else painterResource(R.drawable.ic_visibility),
+                        painter = if (passwordVisibility.value) painterResource(R.drawable.ic_visibility_off) else painterResource(
+                            R.drawable.ic_visibility
+                        ),
                         //imageVector = if (cPasswordVisibility.value) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                         contentDescription = "visibility",
                     )
@@ -209,27 +217,25 @@ fun RegisterScreen(navController: NavController) {
                     }
 
                     else -> {
+                        showDialog = true
+                        isFinished = false
                         scope.launch {
                             try {
-                                val success = loginResponse(name.toString(), password.toString())
-                                if (success) {
-                                    Toast.makeText(
-                                        context,
-                                        "Пользователь успешно зарегистрирован",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-
-                                    navController.navigate(Routes.Login.route) {
-                                        popUpTo(navController.graph.startDestinationId)
-                                        launchSingleTop = true
-                                    }
+                                val status = registResponse(name.value.text, password.value.text)
+                                if (status == HttpStatusCode.Created) {
+                                    errorMessage = ""
+                                    isFinished = true
                                 }
+//                                    delay(100)
+//                                    snackbarHostState.showSnackbar(
+//                                        message = "Ошибка ${status.description}, код ${status.value}",
+//                                        actionLabel = "Закрыть",
+//                                        duration = SnackbarDuration.Indefinite
+//                                    )
+
                             } catch (e: Exception) {
-                                snackbarHostState.showSnackbar(
-                                    message = e.message.toString(),
-                                    actionLabel = "Закрыть",
-                                    duration = SnackbarDuration.Indefinite
-                                )
+                                isFinished = true
+                                errorMessage = e.message.toString()
                             }
 
                         }
@@ -250,15 +256,89 @@ fun RegisterScreen(navController: NavController) {
                     launchSingleTop = true
                 }
             }) {
-                Text(text = stringResource(R.string.to_enter), color = colorResource(R.color.grey_text), fontFamily = HeadingFont)
+                Text(
+                    text = stringResource(R.string.to_enter),
+                    color = colorResource(R.color.grey_text),
+                    fontFamily = HeadingFont
+                )
             }
         }
     }
+
+
+    if (showDialog) {
+        LoadingRegistDialog(
+            isFinished = isFinished,
+            onDismiss = { showDialog = false },
+            navController,
+            errorMessage
+        )
+    }
+}
+
+
+@Composable
+fun LoadingRegistDialog(
+    isFinished: Boolean,
+    onDismiss: () -> Unit,
+    navController: NavController,
+    errorMessage: String
+) {
+
+    AlertDialog(
+        onDismissRequest = { },
+        confirmButton = {
+            if (isFinished) {
+                Button(
+                    onClick = {
+                        onDismiss()
+                        if (errorMessage == "")
+                            navController.navigate(Routes.Login.route) {
+                                popUpTo(navController.graph.startDestinationId)
+                                launchSingleTop = true
+                            }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.blue_button))
+                ) {
+                    Text("ОК")
+                }
+            }
+        },
+        title = {
+            Text(
+                text =
+                if (isFinished && errorMessage == "")
+                    "Пользователь успешно зарегестрирован"
+                else if (errorMessage == "")
+                    "Попытка регистрации..."
+                else
+                    "Ошибка"
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.Start
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (!isFinished) {
+                        CircularProgressIndicator()
+                    } else {
+                        Text(errorMessage)
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+        }
+    )
 }
 
 @Preview
 @Composable
-fun RegistPrewiew(){
+fun RegistPrewiew() {
     MyApplicationTheme {
         RegisterScreen(rememberNavController())
     }

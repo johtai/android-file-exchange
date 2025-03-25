@@ -25,6 +25,11 @@ object TokenStorage {
         val prefs = appContext.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
         prefs.edit().putString(key, value).apply()
     }
+
+    fun deleteToken(key:String){
+        val prefs = appContext.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+        prefs.edit().putString(key, "").apply()
+    }
 }
 
 
@@ -44,14 +49,18 @@ suspend fun refreshToken(): Pair<String, String>? {
 
     return if (response.status == HttpStatusCode.OK) {
         val body = response.body<Map<String, String>>()
-        val newAccessToken = body["accessToken"]
+
+        val newAccessToken = body["token"]
         val newRefreshToken = body["refreshToken"]
+        println("new access token${newAccessToken}")
+        println("new refresh token${newRefreshToken}")
         if (newAccessToken != null && newRefreshToken != null) {
             TokenStorage.saveToken("accessToken", newAccessToken)
             TokenStorage.saveToken("refreshToken", newRefreshToken)
             newAccessToken to newRefreshToken
         } else null
     } else {
+        println("error ${response.status.description} code ${response.status.value}")
         null
     }
 }
