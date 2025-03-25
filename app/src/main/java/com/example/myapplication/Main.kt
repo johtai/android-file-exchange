@@ -5,6 +5,7 @@ import android.content.Context
 import io.ktor.client.*
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
@@ -35,7 +36,7 @@ data class Message(val nickname: String)
 lateinit var client: HttpClient
 
 suspend fun createClient() {
-    client = HttpClient (CIO){
+    client = HttpClient(CIO) {
 
         install(SSE) {
             showCommentEvents()
@@ -47,16 +48,21 @@ suspend fun createClient() {
                 isLenient = true
             })
         }
-        install(Auth){
+        install(Auth) {
             bearer {
                 loadTokens {
                     BearerTokens(loadAccessToken(), loadRefreshToken())
                 }
                 refreshTokens {
                     val newTokens = refreshToken()
-                    newTokens?.let {BearerTokens(it.first, it.second)}
+                    newTokens?.let { BearerTokens(it.first, it.second) }
                 }
             }
+        }
+        install(HttpTimeout) {
+            requestTimeoutMillis = 5000  //запрос
+            connectTimeoutMillis = 5000  //подключение
+            socketTimeoutMillis = 5000   //чтение ответа
         }
     }
 
@@ -83,7 +89,7 @@ suspend fun createClient() {
     client.close()
 }
 
-suspend fun hello():HttpStatusCode{
+suspend fun hello(): HttpStatusCode {
 
     val url = "http://5.165.249.136:2868/hello"
 
@@ -104,47 +110,41 @@ suspend fun hello():HttpStatusCode{
     return response.status
 }
 
-@OptIn(InternalAPI::class)
-suspend fun loginResponse(username:String, password: String): HttpStatusCode {
+suspend fun loginResponse(username: String, password: String): HttpStatusCode {
     val url = "http://5.165.249.136:2868/login"
-
-    val requestBuilder = HttpRequestBuilder().apply {
-        this.url(url)
+    val response: HttpResponse = client.post(url) {
         contentType(io.ktor.http.ContentType.Application.Json)
         setBody(mapOf("username" to username, "password" to password))
-        method = HttpMethod.Post
     }
 
-    // Выводим запрос перед отправкой
-    println("DEBUG REQUEST")
-    println("URL: ${requestBuilder.url.buildString()}")
-    println("Method: ${requestBuilder.method}")
-    println("Headers: ${requestBuilder.headers}")
-    println("Body: ${requestBuilder.body}")
+    println("Response status: ${response.status.value} - ${response.status.description}")
 
-    val response: HttpResponse = client.request(requestBuilder)
+    if (response.status == HttpStatusCode.OK) {
+        val responseBody = try {
+            response.body<Map<String, String>>() // Пробуем получить JSON
+        } catch (e: Exception) {
+            println("Ошибка при парсинге ответа: ${e.message}")
+            emptyMap()
+        }
 
-    if (response.status == HttpStatusCode.OK){
-        val responseBody = response.body<Map<String, String>>()
         val accessToken = responseBody["token"]
         val refreshToken = responseBody["refreshToken"]
-        println("accessToken: ${accessToken}")
-        println("refreshToken: ${refreshToken}")
+        println("accessToken: $accessToken")
+        println("refreshToken: $refreshToken")
+
         if (accessToken != null && refreshToken != null) {
             TokenStorage.saveToken("accessToken", accessToken)
             TokenStorage.saveToken("refreshToken", refreshToken)
-
         }
-    }
-    if(response.status.value != 200)
+    } else {
         throw Exception("${response.status.value}: ${response.status.description}")
-
+    }
     return response.status
 }
 
 
 @OptIn(InternalAPI::class)
-suspend fun registResponse(username:String, password: String): HttpStatusCode {
+suspend fun registResponse(username: String, password: String): HttpStatusCode {
 
     val url = "http://5.165.249.136:2868/register"
 
@@ -169,7 +169,8 @@ suspend fun registResponse(username:String, password: String): HttpStatusCode {
 //    }
     val response: HttpResponse = client.request(requestBuilder)
 
-    if(response.status.value != 201)
+    println("${response.status.value}: ${response.status.description}")
+    if (response.status.value != 201)
         throw Exception("${response.status.value}: ${response.status.description}")
 
     return response.status
