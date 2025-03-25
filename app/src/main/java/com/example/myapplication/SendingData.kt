@@ -203,9 +203,16 @@ object sendingData {
     }
 
     fun saveFile(filename:String, listByteArray: List<ByteArray>)  {
-        val file = FileOutputStream(filename)
-        for (i in listByteArray)
-            file.write(i)
-        file.close()
+        val fileSize = listByteArray.sumOf { it.size };
+        val file = ByteArray(fileSize);
+        var offset = 0;
+
+        listByteArray.forEach { byteArray ->
+            System.arraycopy(byteArray, 0, file, offset, byteArray.size)
+            offset += byteArray.size
+        }
+
+        // Вместо filename нужен путь
+        File(filename).writeBytes(file);
     }
 }
