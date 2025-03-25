@@ -48,11 +48,9 @@ object sendingData {
         } catch (e: Exception){
             println(e.message)
         }
-
     }
 
     suspend fun sendData(ip: String, port: Int, file: List<ByteArray>){
-
         sendingPackages = 0
         allPackages = byteArray.size
 
@@ -66,7 +64,6 @@ object sendingData {
                 println("packet with $clientId was sent")
                 break
             }
-
 
             while (true)
             {
@@ -99,6 +96,7 @@ object sendingData {
                 ++sendingData.sendingPackages
                 val packet = socket.receive()
                 val message = packet.packet.readString()
+
                 if (message == i.toString())
                 {
                     println("$i пакет дошёл до сервера")
@@ -121,6 +119,7 @@ object sendingData {
         allPackages = 0
         sendingPackages = 0
         requestedPackages = 0
+
         val selectorManager = SelectorManager(Dispatchers.IO)
         val socket = aSocket(selectorManager).udp().bind(InetSocketAddress("0.0.0.0", 5089))
 
@@ -132,6 +131,7 @@ object sendingData {
         )
         var packet = socket.receive()
         filename = packet.packet.readString()
+
         socket.send(
             Datagram(
                 packet = ByteReadPacket(array = filename.encodeToByteArray()),
@@ -141,6 +141,7 @@ object sendingData {
         println("File name received: $filename")
 
         packet = socket.receive()
+
         val messageCount = packet.packet.readString()
         socket.send(
             Datagram(
@@ -179,7 +180,6 @@ object sendingData {
 
 
     fun splitFile(context: Context, path: String, chunkSize: Int = 1428): List<ByteArray> {
-        //val file = File(path)
         val parts = mutableListOf<ByteArray>()
         val buffer = ByteArray(chunkSize)
         val bufferNum = ByteArray(4)
