@@ -195,6 +195,7 @@ fun RegisterScreen(navController: NavController) {
         Spacer(Modifier.size(16.dp))
         Button(
             onClick = {
+
                 when {
                     name.value.text.isEmpty() -> {
                         nameErrorState.value = true
@@ -219,11 +220,11 @@ fun RegisterScreen(navController: NavController) {
                     else -> {
                         showDialog = true
                         isFinished = false
+                        errorMessage = ""
                         scope.launch {
                             try {
                                 val status = registResponse(name.value.text, password.value.text)
                                 if (status == HttpStatusCode.Created) {
-                                    errorMessage = ""
                                     isFinished = true
                                 }
                                 else{
@@ -311,7 +312,7 @@ fun LoadingRegistDialog(
             Text(
                 text =
                 if (isFinished && errorMessage == "")
-                    "Пользователь успешно зарегестрирован"
+                    "Успешно!"
                 else if (errorMessage == "")
                     "Попытка регистрации..."
                 else
@@ -325,15 +326,16 @@ fun LoadingRegistDialog(
             ) {
                 Box(
                     modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = if(!isFinished) Alignment.Center else Alignment.CenterStart
                 ) {
                     if (!isFinished) {
                         CircularProgressIndicator()
+                        Spacer(modifier = Modifier.height(8.dp))
                     } else {
                         Text(errorMessage)
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
-                Spacer(modifier = Modifier.height(8.dp))
             }
         }
     )

@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import com.example.myapplication.R
 import com.example.myapplication.sendingData
 import com.example.myapplication.ui.theme.MyApplicationTheme
@@ -43,7 +44,7 @@ fun LoadingDialog(isFinished: Boolean, onDismiss: () -> Unit) {
                     if (!isFinished) {
                         CircularProgressIndicator()
                     } else {
-                        //Text("Загрузка завершена!", fontSize = 5.em)
+                        Text("Загрузка завершена!", fontSize = 5.em)
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))

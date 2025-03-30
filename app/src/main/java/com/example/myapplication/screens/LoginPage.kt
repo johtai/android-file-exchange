@@ -51,7 +51,8 @@ fun LoginScreen(navController: NavController) {
     var errorMessage by remember { mutableStateOf("") }
 
     Column(
-        modifier = Modifier.padding(20.dp)
+        modifier = Modifier
+            .padding(20.dp)
             .fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -100,9 +101,10 @@ fun LoginScreen(navController: NavController) {
             Button(
                 onClick = {
                     showDialog = true
+                    errorMessage = ""
                     scope.launch {
                         try {
-                            val status = HttpStatusCode.OK//loginResponse(username.value.text, password.value.text)
+                            val status = loginResponse(username.value.text, password.value.text)
                             if (status == HttpStatusCode.OK) {
                                 showDialog = false
                                 errorMessage = ""
@@ -114,7 +116,7 @@ fun LoginScreen(navController: NavController) {
 
                         } catch (e:Exception){
                             errorMessage = e.message.toString()
-                            showDialog = false
+
                         }
 
                 } },
@@ -159,9 +161,9 @@ fun LoginScreen(navController: NavController) {
 //            )
 //        )
     }
-//    if(showDialog){
-//        LoadingLoginDialog(onDismiss = {showDialog = false}, errorMessage)
-//    }
+    if(showDialog){
+        LoadingLoginDialog(onDismiss = {showDialog = false}, errorMessage)
+    }
 }
 
 
@@ -197,16 +199,14 @@ fun LoadingLoginDialog(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.Start
             ) {
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (errorMessage == "") {
-                        CircularProgressIndicator()
-                    } else {
-                        Text(errorMessage)
-                    }
-                }
+                if (errorMessage == "")
+                    Box(modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center)
+                    { CircularProgressIndicator() }
+                else
+                    Box(modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.TopStart)
+                    { Text(errorMessage) }
                 Spacer(modifier = Modifier.height(8.dp))
             }
         }

@@ -41,26 +41,3 @@ fun loadRefreshToken(): String {
     return TokenStorage.getToken("refreshToken") ?: ""
 }
 
-suspend fun refreshToken(): Pair<String, String>? {
-    val response: HttpResponse = client.post("http://5.165.249.136:2868/refresh") {
-        contentType(io.ktor.http.ContentType.Application.Json)
-        setBody(mapOf("refreshToken" to loadRefreshToken()))
-    }
-
-    return if (response.status == HttpStatusCode.OK) {
-        val body = response.body<Map<String, String>>()
-
-        val newAccessToken = body["token"]
-        val newRefreshToken = body["refreshToken"]
-        println("new access token${newAccessToken}")
-        println("new refresh token${newRefreshToken}")
-        if (newAccessToken != null && newRefreshToken != null) {
-            TokenStorage.saveToken("accessToken", newAccessToken)
-            TokenStorage.saveToken("refreshToken", newRefreshToken)
-            newAccessToken to newRefreshToken
-        } else null
-    } else {
-        println("error ${response.status.description} code ${response.status.value}")
-        null
-    }
-}
