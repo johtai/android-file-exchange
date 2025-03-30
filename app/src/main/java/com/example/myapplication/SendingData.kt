@@ -20,16 +20,15 @@ import java.io.FileOutputStream
 import java.util.UUID
 
 
-val MAX_FILE_SIZE:Int = 1024*1024*50 //50 МБ
+const val MAX_FILE_SIZE:Int = 1024*1024*50 //50 МБ
 
 object sendingData {
     var filename = "Unknown"
     var byteArray: List<ByteArray> =  List<ByteArray>(size = 0, { byteArrayOf(3)})
     var allPackages by mutableIntStateOf(1)
-    var sendingPackages by mutableIntStateOf(0)
-    var requestedPackages by mutableIntStateOf(0)
-    var address: String = ""
-    var port: Int = 0
+    var sentPackages by mutableIntStateOf(0)
+    var resentPackages by mutableIntStateOf(0)
+
 
     fun setData (context: Context, uri: Uri) {
         try {
@@ -43,8 +42,8 @@ object sendingData {
             }
             byteArray = splitFile(context,  uri.toString())
             allPackages = 0
-            sendingPackages = 0
-            requestedPackages = 0
+            sentPackages = 0
+            resentPackages = 0
         } catch (e: Exception){
             println(e.message)
         }
@@ -53,7 +52,7 @@ object sendingData {
 
     suspend fun sendData(ip: String, port: Int){
 
-        sendingPackages = 0
+        sentPackages = 0
         allPackages = byteArray.size
         try {
             val selectorManager = SelectorManager(Dispatchers.IO)
@@ -95,7 +94,7 @@ object sendingData {
                 delay(90)
                 socket.send(Datagram(ByteReadPacket(byteArray[i]), InetSocketAddress(ip, port)))
                 println("$i пакет отправлен")
-                ++sendingData.sendingPackages
+                ++sentPackages
                 val packet = socket.receive()
                 val message = packet.packet.readString()
                 if (message == i.toString())
@@ -105,6 +104,7 @@ object sendingData {
                 else
                 {
                     socket.send(Datagram(ByteReadPacket(byteArray[i]), InetSocketAddress(ip, port)))
+                    ++resentPackages
                 }
             }
             socket.close()
@@ -118,8 +118,8 @@ object sendingData {
         filename = "Unknown"
         byteArray = List<ByteArray>(size = 0, { byteArrayOf(3)})
         allPackages = 0
-        sendingPackages = 0
-        requestedPackages = 0
+        sentPackages = 0
+        resentPackages = 0
         val selectorManager = SelectorManager(Dispatchers.IO)
         val socket = aSocket(selectorManager).udp().bind(InetSocketAddress("0.0.0.0", 5089))
 
@@ -174,12 +174,6 @@ object sendingData {
         }
         socket.close()
         saveFile(filename, listBytes)
-    }
-
-    fun isDataValid(path:String){
-        if(path == "")
-            throw Exception("Сначала выберите файл")
-
     }
 
     fun splitFile(context: Context, path: String, chunkSize: Int = 1428): List<ByteArray> {

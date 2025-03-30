@@ -151,16 +151,19 @@ fun SendingDataScreen(navController: NavController) {
                     Text(
                         text = stringResource(R.string.greeting_text),
                         fontFamily = HeadingFont,
-                        color = colorResource(R.color.grey_text),
-                        fontSize = 7.em
+                        color = colorResource(R.color.white_button),
+                        fontSize = 7.em,
+                        fontWeight = FontWeight.Thin
                     )
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = colorResource(R.color.blue_head)),
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = colorResource(R.color.blue_button)),
                 actions = {
                     IconButton(onClick = {onLogoutClick(navController)}) {
                         Icon(
-                            painter = painterResource(R.drawable.baseline_arrow_outward_24),
-                            contentDescription = "Logout"
+                            painter = painterResource(R.drawable.logout_icon_155171),
+                            contentDescription = "Logout",
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp, 24.dp)
                         )
                     }
                 }
@@ -201,23 +204,23 @@ fun SendingDataScreen(navController: NavController) {
             FilePickerScreen(scope, snackbarHostState)
 
 
-            Button(onClick = {
-                scope.launch {
-                    val res = hello()
-                    println(res.description)
-                }
-            },)
-            {
-                Text("/hello")
-            }
-            Button(onClick = {
-                scope.launch {
-                    val res = refreshToken()
-                }
-            },)
-            {
-                Text("/refresh")
-            }
+//            Button(onClick = {
+//                scope.launch {
+//                    val res = hello()
+//                    println(res.description)
+//                }
+//            },)
+//            {
+//                Text("/hello")
+//            }
+//            Button(onClick = {
+//                scope.launch {
+//                    val res = refreshToken()
+//                }
+//            },)
+//            {
+//                Text("/refresh")
+//            }
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -230,9 +233,10 @@ fun SendingDataScreen(navController: NavController) {
                         isFinished = false
                         scope.launch {
                             runCatching {
-                                if (sendingData.filename == "Unknown") {
+                                if (sendingData.byteArray.isEmpty()) {
                                     throw Exception("Сначала выберите файл")
                                 }
+
                                 sendingData.sendData(ipAddress, port.toInt())
                                 isFinished = true
                             }.onFailure { e ->

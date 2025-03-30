@@ -48,7 +48,7 @@ suspend fun sendData(ip: String, port: Int, file: List<ByteArray>){
                     if (message == i.toString())
                     {
                         println("$i пакет дошёл до сервера")
-                        ++sendingData.sendingPackages
+                        ++sendingData.sentPackages
                     }
                     else
                     {

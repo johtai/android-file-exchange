@@ -226,6 +226,9 @@ fun RegisterScreen(navController: NavController) {
                                     errorMessage = ""
                                     isFinished = true
                                 }
+                                else{
+                                    throw Exception("Код ${status.value}\n${status.description}")
+                                }
 //                                    delay(100)
 //                                    snackbarHostState.showSnackbar(
 //                                        message = "Ошибка ${status.description}, код ${status.value}",

@@ -9,7 +9,6 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.R
-import androidx.compose.ui.window.Dialog
 import com.example.myapplication.sendingData
 import com.example.myapplication.ui.theme.MyApplicationTheme
 
@@ -48,10 +47,10 @@ fun LoadingDialog(isFinished: Boolean, onDismiss: () -> Unit) {
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                //Text("Размер файла в байтах: ${sendingData.byteArray.size}")
+                Text("Размер файла в байтах: ${sendingData.byteArray.sumOf{it.size}}")
                 Text("Всего пакетов: ${sendingData.allPackages}")
-                Text("Количество отправленных: ${sendingData.sendingPackages}")
-                Text("Повторно запрошено: ${sendingData.requestedPackages}")
+                Text("Количество отправленных: ${sendingData.sentPackages}")
+                Text("Повторно отправленно: ${sendingData.resentPackages}")
             }
         }
     )
