@@ -1,0 +1,22 @@
+ktor:
+    application:
+        modules:
+            - com.example.ApplicationKt.module
+    deployment:
+        port: 2868
+        host: 0.0.0.0
+
+
+jwt:
+    secret: "your_secret_key_here"
+    issuer: "http://0.0.0.0:2868"
+    audience: "http://0.0.0.0:2868/hello"
+    realm: "Access to 'hello'"
+
+
+#аунтификация
+#пароли в виде хеша
+#подключить облачный сервис
+#Получение и отправка
+#бд даных о пользователях
+

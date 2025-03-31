@@ -47,7 +47,6 @@ object sendingData {
         } catch (e: Exception){
             println(e.message)
         }
-
     }
 
     suspend fun sendData(ip: String, port: Int){
@@ -64,7 +63,6 @@ object sendingData {
                 println("packet with $clientId was sent")
                 break
             }
-
 
             while (true)
             {
@@ -97,6 +95,7 @@ object sendingData {
                 ++sentPackages
                 val packet = socket.receive()
                 val message = packet.packet.readString()
+
                 if (message == i.toString())
                 {
                     println("$i пакет дошёл до сервера")
@@ -131,6 +130,7 @@ object sendingData {
         )
         var packet = socket.receive()
         filename = packet.packet.readString()
+
         socket.send(
             Datagram(
                 packet = ByteReadPacket(array = filename.encodeToByteArray()),
@@ -140,6 +140,7 @@ object sendingData {
         println("File name received: $filename")
 
         packet = socket.receive()
+
         val messageCount = packet.packet.readString()
         socket.send(
             Datagram(
@@ -202,9 +203,16 @@ object sendingData {
     }
 
     fun saveFile(filename:String, listByteArray: List<ByteArray>)  {
-        val file = FileOutputStream(filename)
-        for (i in listByteArray)
-            file.write(i)
-        file.close()
+        val fileSize = listByteArray.sumOf { it.size };
+        val file = ByteArray(fileSize);
+        var offset = 0;
+
+        listByteArray.forEach { byteArray ->
+            System.arraycopy(byteArray, 0, file, offset, byteArray.size)
+            offset += byteArray.size
+        }
+
+        // Вместо filename нужен путь
+        File(filename).writeBytes(file);
     }
 }

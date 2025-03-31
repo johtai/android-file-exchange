@@ -1,0 +1,92 @@
+openapi: "3.0.3"
+info:
+  title: "Application API"
+  description: "Application API"
+  version: "1.0.0"
+servers:
+  - url: "http://0.0.0.0:2868"
+paths:
+  /:
+    get:
+      description: "Hello World!"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            text/plain:
+              schema:
+                type: "string"
+              examples:
+                Example#1:
+                  value: "Hello World!"
+
+  /login:
+    post:
+      description: "login to the site"
+      tags:
+        - UserAuthentication
+      responses:
+        "401":
+          description: "Unauthorized"
+      parameters:
+        - username: String
+          in: "username"
+          allowEmptyValue: false
+        - password: String
+          in: "password"
+          allowEmptyValue: false
+
+  /register:
+    post:
+      description: "register to the site"
+      tags:
+        - UserAuthentication
+      responses:
+        "201":
+          description: "Created"
+      parameters:
+        - username: String
+          in: "username"
+          allowEmptyValue: false
+        - password: String
+          in: "password"
+          allowEmptyValue: false
+
+  /file:
+    get:
+      description: "get file form server"
+      tags:
+        - file
+      responses:
+        "200":
+          description: "OK"
+
+  /status:
+    get:
+      description: "выводит статус сервера"
+      responses:
+        "200":
+          description: "OK"
+
+  /files:
+    get:
+      description: "Вывод всех файлов дирректории"
+      tags:
+        - file
+      responses:
+        "200":
+          description: "OK"
+
+  /file{filename}:
+    get:
+      description: "Вывод информации о существовании файла не сервере"
+      tags:
+        - file
+      parameters:
+        -filename: string
+        description: filename
+      responses:
+        "200":
+          description: "OK"
+components:
+  schemas: {}
