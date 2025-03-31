@@ -1,5 +1,7 @@
 package com.example.myapplication.screens
 
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,11 +12,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -36,12 +43,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.Message
@@ -56,23 +65,19 @@ import kotlinx.coroutines.launch
 fun RegisterScreen(navController: NavController) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
     val name = remember {                                           //Lovak
         mutableStateOf(TextFieldValue("Lovak2"))
     }
-    //val email = remember { mutableStateOf(TextFieldValue()) }
     val password = remember { mutableStateOf(TextFieldValue("BestUser03")) }    //BestUser03
     val confirmPassword = remember { mutableStateOf(TextFieldValue("BestUser03")) }
 
     val nameErrorState = remember { mutableStateOf(false) }
-    //val emailErrorState = remember { mutableStateOf(false) }
     val passwordErrorState = remember { mutableStateOf(false) }
     val confirmPasswordErrorState = remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
 
     var showDialog by remember { mutableStateOf(false) }
-    var isFinished by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf("") }
+    BackHandler(enabled = true) {  }
 
     Column(
         modifier = Modifier
@@ -219,27 +224,31 @@ fun RegisterScreen(navController: NavController) {
 
                     else -> {
                         showDialog = true
-                        isFinished = false
-                        errorMessage = ""
                         scope.launch {
                             try {
                                 val status = registResponse(name.value.text, password.value.text)
+                                showDialog = false
                                 if (status == HttpStatusCode.Created) {
-                                    isFinished = true
+
+                                    Toast.makeText(
+                                        context,
+                                        "Пользователь успешно зарегистрирован!",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    navController.navigate(Routes.Login.route) {
+                                        popUpTo(navController.graph.startDestinationId)
+                                        launchSingleTop = true
+                                    }
                                 }
                                 else{
                                     throw Exception("Код ${status.value}\n${status.description}")
                                 }
-//                                    delay(100)
-//                                    snackbarHostState.showSnackbar(
-//                                        message = "Ошибка ${status.description}, код ${status.value}",
-//                                        actionLabel = "Закрыть",
-//                                        duration = SnackbarDuration.Indefinite
-//                                    )
-
                             } catch (e: Exception) {
-                                isFinished = true
-                                errorMessage = e.message.toString()
+                                Toast.makeText(
+                                    context,
+                                    e.message,
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
 
                         }
@@ -271,75 +280,32 @@ fun RegisterScreen(navController: NavController) {
 
 
     if (showDialog) {
-        LoadingRegistDialog(
-            isFinished = isFinished,
-            onDismiss = { showDialog = false },
-            navController,
-            errorMessage
-        )
+        LoadingRegisterDialog(onDismiss = { showDialog = false })
     }
 }
 
-
 @Composable
-fun LoadingRegistDialog(
-    isFinished: Boolean,
-    onDismiss: () -> Unit,
-    navController: NavController,
-    errorMessage: String
-) {
-
-    AlertDialog(
-        onDismissRequest = { },
-        confirmButton = {
-            if (isFinished) {
-                Button(
-                    onClick = {
-                        onDismiss()
-                        if (errorMessage == "")
-                            navController.navigate(Routes.Login.route) {
-                                popUpTo(navController.graph.startDestinationId)
-                                launchSingleTop = true
-                            }
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.blue_button))
-                ) {
-                    Text("ОК")
-                }
-            }
-        },
-        title = {
-            Text(
-                text =
-                if (isFinished && errorMessage == "")
-                    "Успешно!"
-                else if (errorMessage == "")
-                    "Попытка регистрации..."
-                else
-                    "Ошибка"
-            )
-        },
-        text = {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.Start
+fun LoadingRegisterDialog(onDismiss: () -> Unit) {
+    Dialog(onDismissRequest = { }) {
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White)
+        ) {
+            Row(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .wrapContentSize(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = if(!isFinished) Alignment.Center else Alignment.CenterStart
-                ) {
-                    if (!isFinished) {
-                        CircularProgressIndicator()
-                        Spacer(modifier = Modifier.height(8.dp))
-                    } else {
-                        Text(errorMessage)
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
-                }
+                CircularProgressIndicator(modifier = Modifier.size(32.dp))
+                Spacer(modifier = Modifier.width(16.dp))
+                Text("Попытка регистрации...", fontSize = 18.sp, fontWeight = FontWeight.Medium)
             }
         }
-    )
+    }
 }
+
 
 @Preview
 @Composable

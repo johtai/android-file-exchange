@@ -3,6 +3,7 @@ package com.example.myapplication.screens
 import android.content.Context
 import android.net.Uri
 import android.os.ParcelFileDescriptor
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,6 +31,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -67,6 +70,7 @@ fun FilePickerScreen(scope: CoroutineScope, snackbarHostState: SnackbarHostState
     val context = LocalContext.current
     var selectedFileUri by remember { mutableStateOf<Uri?>(null) }
 
+
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
         onResult = { uri ->
@@ -74,7 +78,10 @@ fun FilePickerScreen(scope: CoroutineScope, snackbarHostState: SnackbarHostState
                 val fileSize = getFileSize(context, it)
                 if (fileSize != null && fileSize > MAX_FILE_SIZE) {
                     scope.launch {
-                        snackbarHostState.showSnackbar("Размер файла не должен превышать ${MAX_FILE_SIZE / 1024 / 1024} МБ")
+                        snackbarHostState.showSnackbar(
+                            message = "Размер файла не должен превышать ${MAX_FILE_SIZE / 1024 / 1024} МБ",
+                            actionLabel = "Закрыть",
+                            duration = SnackbarDuration.Indefinite)
                     }
                 } else {
                     selectedFileUri = it
@@ -125,6 +132,7 @@ fun getFileSize(context: Context, uri: Uri): Long? {
 }
 
 fun onLogoutClick(navController: NavController){
+    
     TokenStorage.deleteToken("accessToken")
     TokenStorage.deleteToken("refreshToken")
 
@@ -136,6 +144,26 @@ fun onLogoutClick(navController: NavController){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+fun LogoutConfirm(navController: NavController, onDismiss: () -> Unit, ){
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = {
+                onDismiss()
+                onLogoutClick(navController)
+            }) { Text("Выйти") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Отмена") }
+        },
+        title = { Text("Выход") },
+        text = { Text("Вы уверены что хотите выйти?") },
+
+        )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 fun SendingDataScreen(navController: NavController) {
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -143,6 +171,8 @@ fun SendingDataScreen(navController: NavController) {
     var port by remember { mutableStateOf("2869") }
     var showDialog by remember { mutableStateOf(false) }
     var isFinished by remember { mutableStateOf(false) }
+    var showLogoutConfirm by remember { mutableStateOf(false) }
+    BackHandler(enabled = true) {  }
 
     Scaffold(modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -267,6 +297,10 @@ fun SendingDataScreen(navController: NavController) {
 
     if (showDialog) {
         LoadingDialog(isFinished = isFinished, onDismiss = { showDialog = false })
+    }
+
+    if(showLogoutConfirm){
+        LogoutConfirm(navController, {showLogoutConfirm = false})
     }
 }
 

@@ -1,5 +1,7 @@
 package com.example.myapplication.screens
 
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -25,6 +27,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -32,8 +36,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.R
@@ -46,9 +52,11 @@ import kotlinx.coroutines.launch
 @Composable
 fun LoginScreen(navController: NavController) {
 
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var showDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
+    BackHandler(enabled = true) {  }
 
     Column(
         modifier = Modifier
@@ -101,12 +109,11 @@ fun LoginScreen(navController: NavController) {
             Button(
                 onClick = {
                     showDialog = true
-                    errorMessage = ""
                     scope.launch {
                         try {
                             val status = loginResponse(username.value.text, password.value.text)
+                            showDialog = false
                             if (status == HttpStatusCode.OK) {
-                                showDialog = false
                                 errorMessage = ""
                                 navController.navigate(Routes.Send.route){
                                     popUpTo(navController.graph.startDestinationId)
@@ -115,8 +122,11 @@ fun LoginScreen(navController: NavController) {
                             }
 
                         } catch (e:Exception){
-                            errorMessage = e.message.toString()
-
+                            Toast.makeText(
+                                context,
+                                e.message,
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
 
                 } },
@@ -162,7 +172,8 @@ fun LoginScreen(navController: NavController) {
 //        )
     }
     if(showDialog){
-        LoadingLoginDialog(onDismiss = {showDialog = false}, errorMessage)
+        //LoadingLoginDialog(onDismiss = {showDialog = false}, errorMessage)
+        LoadingLoginDialog2()
     }
 }
 
@@ -211,6 +222,28 @@ fun LoadingLoginDialog(
             }
         }
     )
+}
+
+@Composable
+fun LoadingLoginDialog2() {
+    Dialog(onDismissRequest = { }) {
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White)
+        ) {
+            Row(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .wrapContentSize(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                CircularProgressIndicator(modifier = Modifier.size(32.dp))
+                Spacer(modifier = Modifier.width(16.dp))
+                Text("Вход...", fontSize = 18.sp, fontWeight = FontWeight.Medium)
+            }
+        }
+    }
 }
 
 @Preview(showBackground = true)
