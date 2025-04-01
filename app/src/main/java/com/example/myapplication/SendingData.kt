@@ -230,6 +230,6 @@ object sendingData {
         }
 
         // Вместо filename нужен путь
-        File(filename).writeBytes(file);
+        //File(filename).writeBytes(file);
     }
 }
