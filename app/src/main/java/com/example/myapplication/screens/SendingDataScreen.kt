@@ -162,18 +162,23 @@ fun LogoutConfirm(navController: NavController, onDismiss: () -> Unit, ){
         )
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SendingDataScreen(navController: NavController) {
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-    var ipAddress by remember { mutableStateOf("5.167.121.51") }
+    var ipAddress by remember { mutableStateOf("5.165.249.136") }
     var port by remember { mutableStateOf("2869") }
     var username by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
     var isFinished by remember { mutableStateOf(false) }
     var showLogoutConfirm by remember { mutableStateOf(false) }
-    BackHandler(enabled = true) {  }
+    BackHandler(enabled = true) {
+        if(!isFinished){
+
+        }
+    }
 
     Scaffold(modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -235,23 +240,23 @@ fun SendingDataScreen(navController: NavController) {
             FilePickerScreen(scope, snackbarHostState)
 
 
-//            Button(onClick = {
-//                scope.launch {
-//                    val res = hello()
-//                    println(res.description)
-//                }
-//            },)
-//            {
-//                Text("/hello")
-//            }
-//            Button(onClick = {
-//                scope.launch {
-//                    val res = refreshToken()
-//                }
-//            },)
-//            {
-//                Text("/refresh")
-//            }
+            Button(onClick = {
+                scope.launch {
+                    val res = hello()
+                    println(res.description)
+                }
+            },)
+            {
+                Text("/hello")
+            }
+            Button(onClick = {
+                scope.launch {
+                    val res = refreshToken()
+                }
+            },)
+            {
+                Text("/refresh")
+            }
             Button(onClick = {
                 scope.launch {
                     navController.navigate(Routes.Receive.route){

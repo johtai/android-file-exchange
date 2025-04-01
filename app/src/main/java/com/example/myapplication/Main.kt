@@ -64,11 +64,11 @@ suspend fun createClient() {
                 }
             }
         }
-//        install(HttpTimeout) {
-//            requestTimeoutMillis = 5000  //запрос
-//            connectTimeoutMillis = 5000  //подключение
-//            socketTimeoutMillis = 5000   //чтение ответа
-//        }
+        install(HttpTimeout) {
+            requestTimeoutMillis = 5000  //запрос
+            connectTimeoutMillis = 5000  //подключение
+            socketTimeoutMillis = 5000   //чтение ответа
+        }
 
     }
 

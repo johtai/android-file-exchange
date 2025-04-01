@@ -2,7 +2,6 @@ package com.example.myapplication
 
 import android.content.Context
 import android.net.Uri
-import android.provider.MediaStore
 import android.provider.OpenableColumns
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -71,7 +70,6 @@ object sendingData {
                 val filename = sendingData.filename
                 socket.send(Datagram(ByteReadPacket(filename.encodeToByteArray()), InetSocketAddress(ip, port)))
                 val packet = socket.receive()
-                println("Название принятого пакета ${packet.packet.readString()}")
                 if (packet.packet.readString() == filename)
                 {
                     println("Название дошло успешно")
@@ -219,6 +217,7 @@ object sendingData {
             offset += pack.size
         }
 
-
+        // Вместо filename нужен путь
+        //File(filename).writeBytes(file);
     }
 }
