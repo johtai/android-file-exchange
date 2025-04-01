@@ -83,7 +83,7 @@ suspend fun createClient() {
                     // Здесь будет проверка события. Если про нас, то создаём сокет с сервером по нужному порту
                     if (obj.nickname == "admin") {
                         sendingData.receiveData("5.165.249.136", 2869)
-                        client.close()
+                        //client.close()
                     }
                 }
             }
@@ -91,8 +91,7 @@ suspend fun createClient() {
     } catch (e: Exception) {
         println(e.message)
     }
-
-    client.close()
+    //client.close()
 }
 
 suspend fun hello(): HttpStatusCode {

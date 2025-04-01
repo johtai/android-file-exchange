@@ -16,6 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.io.readByteArray
 import kotlinx.io.readString
+import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID
 
@@ -64,6 +65,18 @@ object sendingData {
                 break
             }
 
+            //while (true)
+            //{
+            //    val nickname = "admin1"
+            //    socket.send(Datagram(ByteReadPacket(nickname.encodeToByteArray()), InetSocketAddress(ip, port)))
+            //    val packet = socket.receive()
+           //     if (packet.packet.readString() == nickname)
+            //    {
+            //        println("Имя получателя дошло успешно")
+            //        break;
+            //    }
+           // }
+
             while (true)
             {
                 val filename = sendingData.filename
@@ -87,7 +100,9 @@ object sendingData {
                 }
             }
 
-            for (i in 0..<byteArray.size)
+            var i = 0
+
+            while (i < byteArray.size)
             {
                 delay(90)
                 socket.send(Datagram(ByteReadPacket(byteArray[i]), InetSocketAddress(ip, port)))
@@ -99,6 +114,7 @@ object sendingData {
                 if (message == i.toString())
                 {
                     println("$i пакет дошёл до сервера")
+                    ++i
                 }
                 else
                 {
@@ -148,13 +164,14 @@ object sendingData {
                 address = packet.address
             )
         )
+        allPackages = messageCount.toInt()
         println("messageCount: $messageCount")
 
         val listBytes = mutableListOf<ByteArray>()
 
-        for (i in 0 ..<messageCount.toInt()) {
+        for (i in 0 ..<allPackages) {
             packet = socket.receive()
-            println("packet:$packet")
+            //println("packet:$packet")
             val numMessage = packet.packet.readByteArray(4)
             val numOfPacket = (numMessage[3].toInt() shl 24) or
                     (numMessage[2].toInt() and 0xff shl 16) or
@@ -174,7 +191,7 @@ object sendingData {
             )
         }
         socket.close()
-        saveFile(filename, listBytes)
+        //saveFile(filename, listBytes)
     }
 
     fun splitFile(context: Context, path: String, chunkSize: Int = 1428): List<ByteArray> {
