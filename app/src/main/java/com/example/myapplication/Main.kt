@@ -64,11 +64,11 @@ suspend fun createClient() {
                 }
             }
         }
-        install(HttpTimeout) {
-            requestTimeoutMillis = 5000  //запрос
-            connectTimeoutMillis = 5000  //подключение
-            socketTimeoutMillis = 5000   //чтение ответа
-        }
+//        install(HttpTimeout) {
+//            requestTimeoutMillis = 5000  //запрос
+//            connectTimeoutMillis = 5000  //подключение
+//            socketTimeoutMillis = 5000   //чтение ответа
+//        }
 
     }
 
@@ -157,11 +157,11 @@ suspend fun registResponse(username: String, password: String): HttpStatusCode {
     }
 
 //    // Выводим запрос перед отправкой
-//    println("DEBUG REQUEST")
-//    println("URL: ${requestBuilder.url.buildString()}")
-//    println("Method: ${requestBuilder.method}")
-//    println("Headers: ${requestBuilder.headers}")
-//    println("Body: ${requestBuilder.body}")
+    println("DEBUG REQUEST")
+    println("URL: ${requestBuilder.url.buildString()}")
+    println("Method: ${requestBuilder.method}")
+    println("Headers: ${requestBuilder.headers}")
+    println("Body: ${requestBuilder.body}")
 
     val response: HttpResponse = client.request(requestBuilder)
 

@@ -244,6 +244,7 @@ fun RegisterScreen(navController: NavController) {
                                     throw Exception("Код ${status.value}\n${status.description}")
                                 }
                             } catch (e: Exception) {
+                                showDialog = false
                                 Toast.makeText(
                                     context,
                                     e.message,

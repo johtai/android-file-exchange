@@ -118,5 +118,5 @@ suspend fun receiveData(ip: String, port: Int){
         )
     }
     socket.close()
-    sendingData.saveFile(fileName, listBytes)
+    sendingData.saveFile()
 }

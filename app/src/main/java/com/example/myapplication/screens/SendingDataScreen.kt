@@ -169,6 +169,7 @@ fun SendingDataScreen(navController: NavController) {
     val snackbarHostState = remember { SnackbarHostState() }
     var ipAddress by remember { mutableStateOf("5.167.121.51") }
     var port by remember { mutableStateOf("2869") }
+    var username by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
     var isFinished by remember { mutableStateOf(false) }
     var showLogoutConfirm by remember { mutableStateOf(false) }
@@ -188,7 +189,7 @@ fun SendingDataScreen(navController: NavController) {
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = colorResource(R.color.blue_button)),
                 actions = {
-                    IconButton(onClick = {onLogoutClick(navController)}) {
+                    IconButton(onClick = {showLogoutConfirm = true}) {
                         Icon(
                             painter = painterResource(R.drawable.logout_icon_155171),
                             contentDescription = "Logout",
@@ -213,13 +214,13 @@ fun SendingDataScreen(navController: NavController) {
 
 
             Text(
-                stringResource(R.string.heading_server),
+                stringResource(R.string.whom),
                 fontSize = 9.em,
                 fontFamily = HeadingFont,
                 color = colorResource(R.color.grey_text)
             )
-            InputField(ipAddress, { ipAddress = it }, stringResource(R.string.address))
-            InputField(port, { port = it }, stringResource(R.string.num_of_port))
+            InputField(username, { username = it }, stringResource(R.string.input_username))
+            //InputField(port, { port = it }, stringResource(R.string.num_of_port))
 
             Spacer(modifier = Modifier.height(5.dp))
 
@@ -251,6 +252,17 @@ fun SendingDataScreen(navController: NavController) {
 //            {
 //                Text("/refresh")
 //            }
+            Button(onClick = {
+                scope.launch {
+                    navController.navigate(Routes.Receive.route){
+                        popUpTo(navController.graph.startDestinationId)
+                        launchSingleTop = true
+                    }
+                }
+            },)
+            {
+                Text("GO!!")
+            }
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -266,7 +278,6 @@ fun SendingDataScreen(navController: NavController) {
                                 if (sendingData.byteArray.isEmpty()) {
                                     throw Exception("Сначала выберите файл")
                                 }
-
                                 sendingData.sendData(ipAddress, port.toInt())
                                 isFinished = true
                             }.onFailure { e ->

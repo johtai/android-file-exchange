@@ -2,9 +2,11 @@ package com.example.myapplication
 
 import android.content.Context
 import android.net.Uri
+import android.provider.MediaStore
 import android.provider.OpenableColumns
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
 import io.ktor.network.selector.SelectorManager
@@ -28,7 +30,7 @@ object sendingData {
     var allPackages by mutableIntStateOf(1)
     var sentPackages by mutableIntStateOf(0)
     var resentPackages by mutableIntStateOf(0)
-
+    var douwnloadingInProcces by mutableStateOf(false)
 
     fun setData (context: Context, uri: Uri) {
         try {
@@ -69,6 +71,7 @@ object sendingData {
                 val filename = sendingData.filename
                 socket.send(Datagram(ByteReadPacket(filename.encodeToByteArray()), InetSocketAddress(ip, port)))
                 val packet = socket.receive()
+                println("Название принятого пакета ${packet.packet.readString()}")
                 if (packet.packet.readString() == filename)
                 {
                     println("Название дошло успешно")
@@ -114,6 +117,7 @@ object sendingData {
     }
 
     suspend fun receiveData(ip: String, port: Int){
+        douwnloadingInProcces = true
         filename = "Unknown"
         byteArray = List<ByteArray>(size = 0, { byteArrayOf(3)})
         allPackages = 0
@@ -121,6 +125,7 @@ object sendingData {
         resentPackages = 0
         val selectorManager = SelectorManager(Dispatchers.IO)
         val socket = aSocket(selectorManager).udp().bind(InetSocketAddress("0.0.0.0", 5089))
+
 
         socket.send(
             Datagram(
@@ -149,7 +154,7 @@ object sendingData {
             )
         )
         println("messageCount: $messageCount")
-
+        allPackages = messageCount.toInt()
         val listBytes = mutableListOf<ByteArray>()
 
         for (i in 0 ..<messageCount.toInt()) {
@@ -172,9 +177,11 @@ object sendingData {
                     ), address = packet.address
                 )
             )
+            sentPackages++
         }
         socket.close()
-        saveFile(filename, listBytes)
+        byteArray = listBytes
+        douwnloadingInProcces = false
     }
 
     fun splitFile(context: Context, path: String, chunkSize: Int = 1428): List<ByteArray> {
@@ -202,17 +209,16 @@ object sendingData {
         return parts
     }
 
-    fun saveFile(filename:String, listByteArray: List<ByteArray>)  {
-        val fileSize = listByteArray.sumOf { it.size };
+    fun saveFile()  {
+        val fileSize = byteArray.sumOf { it.size };
         val file = ByteArray(fileSize);
         var offset = 0;
 
-        listByteArray.forEach { byteArray ->
-            System.arraycopy(byteArray, 0, file, offset, byteArray.size)
-            offset += byteArray.size
+        byteArray.forEach { pack ->
+            System.arraycopy(pack, 0, file, offset, pack.size)
+            offset += pack.size
         }
 
-        // Вместо filename нужен путь
-        File(filename).writeBytes(file);
+
     }
 }

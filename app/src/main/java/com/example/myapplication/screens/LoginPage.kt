@@ -114,6 +114,7 @@ fun LoginScreen(navController: NavController) {
                             val status = loginResponse(username.value.text, password.value.text)
                             showDialog = false
                             if (status == HttpStatusCode.OK) {
+                            //if(true){
                                 errorMessage = ""
                                 navController.navigate(Routes.Send.route){
                                     popUpTo(navController.graph.startDestinationId)
@@ -122,6 +123,7 @@ fun LoginScreen(navController: NavController) {
                             }
 
                         } catch (e:Exception){
+                            showDialog = false
                             Toast.makeText(
                                 context,
                                 e.message,
