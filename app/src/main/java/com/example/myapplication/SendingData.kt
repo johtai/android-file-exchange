@@ -16,7 +16,11 @@ import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.aSocket
 import io.ktor.utils.io.core.ByteReadPacket
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import kotlinx.io.readByteArray
 import kotlinx.io.readString
 import java.util.UUID
@@ -54,7 +58,6 @@ object sendingData {
         }
     }
 
-
     suspend fun sendData(nickname: String){
 
         sentPackages = 0
@@ -63,6 +66,7 @@ object sendingData {
             val selectorManager = SelectorManager(Dispatchers.IO)
             val socket = aSocket(selectorManager).udp().bind(InetSocketAddress("0.0.0.0", 5088))
             val clientId = UUID.randomUUID().toString() // генерируем уникальный идентификатор
+            var packet: Datagram? = null
 
             while(true) {
                 socket.send(Datagram(packet = ByteReadPacket(clientId.encodeToByteArray()), address = InetSocketAddress(ip, port)))
@@ -70,63 +74,105 @@ object sendingData {
                 break
             }
 
-            while (true)
-            {
-
-                socket.send(Datagram(ByteReadPacket(nickname.encodeToByteArray()), InetSocketAddress(ip, port)))
-                val packet = socket.receive()
-                if (packet.packet.readString() == nickname)
-                {
-                    println("Имя получателя дошло успешно")
-                    break;
-                }
-            }
+            packet = null
 
             while (true)
             {
-                val filename = sendingData.filename
-                socket.send(Datagram(ByteReadPacket(filename.encodeToByteArray()), InetSocketAddress(ip, port)))
-                val packet = socket.receive()
-                if (packet.packet.readString() == filename)
+                try {
+                    socket.send(Datagram(ByteReadPacket(nickname.encodeToByteArray()), InetSocketAddress(ip, port)))
+                    withTimeout(2000) {
+                        packet = socket.receive()
+                    }
+                }
+                catch (e: TimeoutCancellationException) { // Exception
+                    println(e.message)
+                }
+                if (packet != null)
                 {
-                    println("Название дошло успешно")
-                    break;
+                    if (packet!!.packet.readString() == nickname)
+                    {
+                        println("Имя получателя дошло успешно")
+                        break;
+                    }
                 }
             }
 
+            val filename = sendingData.filename
+            packet = null
             while (true)
             {
-                socket.send(Datagram(ByteReadPacket(byteArray.size.toString().encodeToByteArray()), InetSocketAddress(ip, port)))
-                val packet = socket.receive()
-                if (packet.packet.readString() == byteArray.size.toString())
+                try {
+                    socket.send(Datagram(ByteReadPacket(filename.encodeToByteArray()), InetSocketAddress(ip, port)))
+                    withTimeout(2000) {
+                        packet = socket.receive()
+                    }
+                }
+                catch (e: TimeoutCancellationException) { // Exception
+                    println(e.message)
+                }
+                if (packet != null)
                 {
-                    println("Размер (в пакетах) дошёл успешно")
-                    break;
+                    if (packet!!.packet.readString() == filename)
+                    {
+                        println("Название дошло успешно")
+                        break;
+                    }
                 }
             }
 
+            packet = null
+            while (true)
+            {
+                try {
+                    socket.send(Datagram(ByteReadPacket(byteArray.size.toString().encodeToByteArray()), InetSocketAddress(ip, port)))
+                    withTimeout(2000) {
+                        packet = socket.receive()
+                    }
+                }
+                catch (e: TimeoutCancellationException) { // Exception
+                    println(e.message)
+                }
+                if (packet != null)
+                {
+                    if (packet!!.packet.readString() == byteArray.size.toString())
+                    {
+                        println("Размер (в пакетах) дошёл успешно")
+                        break;
+                    }
+                }
+            }
+            packet = null
             var i = 0
-
             while (i < byteArray.size)
             {
                 delay(90)
-                socket.send(Datagram(ByteReadPacket(byteArray[i]), InetSocketAddress(ip, port)))
-                println("$i пакет отправлен")
-                ++sentPackages
-                val packet = socket.receive()
-                val message = packet.packet.readString()
-
-                if (message == i.toString())
-                {
-                    println("$i пакет дошёл до сервера")
-                    ++i
-                }
-                else
-                {
+                try {
                     socket.send(Datagram(ByteReadPacket(byteArray[i]), InetSocketAddress(ip, port)))
-                    ++resentPackages
+                    println("$i пакет отправлен")
+                    ++sentPackages
+                    withTimeout(2000) {
+                        packet = socket.receive()
+                    }
                 }
+                catch (e: TimeoutCancellationException) { // Exception
+                    println(e.message)
+                }
+                if (packet != null)
+                {
+                    val message = packet!!.packet.readString()
+                    if (message == i.toString())
+                    {
+                        println("$i пакет дошёл до сервера")
+                        ++i
+                    }
+                    else
+                    {
+                        ++resentPackages
+                    }
+                }
+                packet = null
             }
+
             socket.close()
 
         } catch (e:Exception) {
@@ -144,7 +190,6 @@ object sendingData {
         resentPackages = 0
         val selectorManager = SelectorManager(Dispatchers.IO)
         val socket = aSocket(selectorManager).udp().bind(InetSocketAddress("0.0.0.0", 5089))
-
 
         socket.send(
             Datagram(
