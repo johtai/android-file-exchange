@@ -226,7 +226,7 @@ fun RegisterScreen(navController: NavController) {
                         showDialog = true
                         scope.launch {
                             try {
-                                val status = registResponse(name.value.text, password.value.text)
+                                val status = registResponse(name.value.text.trim(), password.value.text.trim())
                                 showDialog = false
                                 if (status == HttpStatusCode.Created) {
 
@@ -272,7 +272,7 @@ fun RegisterScreen(navController: NavController) {
             }) {
                 Text(
                     text = stringResource(R.string.to_enter),
-                    color = colorResource(R.color.grey_text),
+                    color = colorResource(R.color.purple_200),
                     fontFamily = HeadingFont
                 )
             }
@@ -281,12 +281,12 @@ fun RegisterScreen(navController: NavController) {
 
 
     if (showDialog) {
-        LoadingRegisterDialog(onDismiss = { showDialog = false })
+        LoadingRegisterDialog()
     }
 }
 
 @Composable
-fun LoadingRegisterDialog(onDismiss: () -> Unit) {
+fun LoadingRegisterDialog() {
     Dialog(onDismissRequest = { }) {
         Card(
             shape = RoundedCornerShape(16.dp),

@@ -1,7 +1,6 @@
 package com.example.myapplication.screens
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -25,7 +24,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
@@ -39,40 +37,99 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.example.myapplication.R
 import com.example.myapplication.sendingData
+import kotlinx.coroutines.launch
 
 @Composable
-fun ReceiveDataAlertDialog(navController: NavController, username:String, onDismiss: () -> Unit){
+fun ConfirmReceiveDialog(onDismiss: () -> Unit){
 
+    val scope = rememberCoroutineScope()
     AlertDialog(
         onDismissRequest = {},
         confirmButton = {TextButton(onClick = {
-            navController.navigate(Routes.Login.route) {
-                popUpTo(navController.graph.startDestinationId)
-                launchSingleTop = true
+            scope.launch {
+                onDismiss()
+                sendingData.receiveData()
+//                navController.navigate(Routes.Login.route) {
+//                    popUpTo(navController.graph.startDestinationId)
+//                    launchSingleTop = true
+//                }
             }
         })
         {Text("Да")} },
         dismissButton = {
-            TextButton(onClick = onDismiss)
+            TextButton(onClick = {
+                scope.launch {
+                    onDismiss()
+                    sendingData.sentRejection()
+                }
+            })
         {Text("Нет")}},
         title = {Text(
             "Получение данных"
         )},
-        text = {Text("Пользователь $username хочет отправить вам файл. Принять?")},
+        text = {Text("Вам хотят отправить файл. Принять?")},
+    )
+}
+
+@Composable
+fun ReceiveDataDialog(onDismiss: () -> Unit){
+
+    val scope = rememberCoroutineScope()
+    AlertDialog(
+        onDismissRequest = {},
+        confirmButton = {
+            if (!sendingData.downloadingInProcess) {
+                TextButton(onClick = {
+                    scope.launch {
+                        sendingData.saveFile()
+                    }
+                })
+                { Text("Сохранить файл") }
+            }
+        },
+        dismissButton = {
+            if(!sendingData.downloadingInProcess){
+                TextButton(onClick = {
+                    scope.launch {
+                        sendingData.saveFile()
+                    }
+                })
+                { Text("Отмена") }
+            }
+        },
+        title = {Text(
+            if(sendingData.downloadingInProcess)"Получение данных" else "Файл загружен"
+        )},
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.Start
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (sendingData.downloadingInProcess) {
+                        CircularProgressIndicator()
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Имя файла: ${sendingData.filename}")
+                if(!sendingData.downloadingInProcess)Text("Размер файла в байтах: ${sendingData.byteArray.sumOf{it.size}}")
+                Text("Всего пакетов: ${sendingData.allPackages}")
+                Text("Количество принятых: ${sendingData.sentPackages}")
+            }
+        }
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReceiveDataScreen(navController: NavController){
-
-    val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     BackHandler(enabled = true) {  }
 
@@ -91,7 +148,7 @@ fun ReceiveDataScreen(navController: NavController){
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = colorResource(R.color.blue_button)),
                 navigationIcon = {
                     IconButton(onClick = {
-                        if(!sendingData.douwnloadingInProcces) {
+                        if(!sendingData.downloadingInProcess) {
                             navController.navigate(Routes.Send.route) {
                                 popUpTo(navController.graph.startDestinationId)
                                 launchSingleTop = true
@@ -112,13 +169,13 @@ fun ReceiveDataScreen(navController: NavController){
         Column(
             Modifier
                 .fillMaxSize()
-                .padding(5.dp)
+                .padding(15.dp)
                 .padding(innerPadding),
             horizontalAlignment = Alignment.Start
         ) {
             Spacer(Modifier.height(20.dp))
             Text(
-                text = if (sendingData.douwnloadingInProcces) "Принимаем файл..." else "Загружено",
+                text = if (sendingData.downloadingInProcess) "Принимаем файл..." else "Загружено",
                 fontSize = 9.em,
                 fontFamily = HeadingFont,
                 color = colorResource(R.color.grey_text)
@@ -148,7 +205,7 @@ fun ReceiveDataScreen(navController: NavController){
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (sendingData.douwnloadingInProcces) {
+                    if (sendingData.downloadingInProcess) {
                         CircularProgressIndicator(modifier = Modifier.size(40.dp, 40.dp), color = colorResource(R.color.blue_button))
                     } else {
 
@@ -176,5 +233,5 @@ fun ReceiveDataScreen(navController: NavController){
 @Composable
 fun ReceiveDataAD(){
     var showRDAL by remember { mutableStateOf(false) }
-    ReceiveDataScreen(rememberNavController())
+    ReceiveDataDialog({showRDAL = false})
 }

@@ -43,6 +43,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.R
+import com.example.myapplication.TokenStorage
 import com.example.myapplication.hello
 import com.example.myapplication.loginResponse
 import io.ktor.http.HttpStatusCode
@@ -111,11 +112,11 @@ fun LoginScreen(navController: NavController) {
                     showDialog = true
                     scope.launch {
                         try {
-                            val status = loginResponse(username.value.text, password.value.text)
+                            val status = loginResponse(username.value.text.trim(), password.value.text.trim())
                             showDialog = false
                             if (status == HttpStatusCode.OK) {
                             //if(true){
-                                errorMessage = ""
+                                TokenStorage.saveUser(username.value.text.trim())
                                 navController.navigate(Routes.Send.route){
                                     popUpTo(navController.graph.startDestinationId)
                                     launchSingleTop = true
@@ -175,59 +176,13 @@ fun LoginScreen(navController: NavController) {
     }
     if(showDialog){
         //LoadingLoginDialog(onDismiss = {showDialog = false}, errorMessage)
-        LoadingLoginDialog2()
+        LoadingLoginDialog()
     }
 }
 
 
 @Composable
-fun LoadingLoginDialog(
-    onDismiss: () -> Unit,
-    errorMessage: String
-) {
-
-    AlertDialog(
-        onDismissRequest = { },
-        confirmButton = {
-            if (errorMessage != "") {
-                Button(
-                    onClick = onDismiss,
-                    colors = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.blue_button))
-                ) {
-                    Text("ОК")
-                }
-            }
-        },
-        title = {
-            Text(
-                text =
-                if (errorMessage == "")
-                    "Вход..."
-                else
-                    "Ошибка"
-            )
-        },
-        text = {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.Start
-            ) {
-                if (errorMessage == "")
-                    Box(modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center)
-                    { CircularProgressIndicator() }
-                else
-                    Box(modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.TopStart)
-                    { Text(errorMessage) }
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-        }
-    )
-}
-
-@Composable
-fun LoadingLoginDialog2() {
+fun LoadingLoginDialog() {
     Dialog(onDismissRequest = { }) {
         Card(
             shape = RoundedCornerShape(16.dp),

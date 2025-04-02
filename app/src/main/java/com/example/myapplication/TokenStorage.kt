@@ -30,6 +30,21 @@ object TokenStorage {
         val prefs = appContext.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
         prefs.edit().putString(key, "").apply()
     }
+
+    fun getUser(): String? {
+        val prefs = appContext.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+        return prefs.getString("username", null)
+    }
+
+    fun saveUser(name: String) {
+        val prefs = appContext.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+        prefs.edit().putString("username", name).apply()
+    }
+
+    fun deleteUser(){
+        val prefs = appContext.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+        prefs.edit().putString("username", "").apply()
+    }
 }
 
 

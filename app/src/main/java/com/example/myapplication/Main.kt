@@ -2,6 +2,7 @@ package com.example.myapplication
 
 
 import android.content.Context
+import com.example.myapplication.sendingData.filename
 import io.ktor.client.*
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
@@ -27,8 +28,12 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.encodedPath
+import io.ktor.network.selector.SelectorManager
+import io.ktor.network.sockets.InetSocketAddress
+import io.ktor.network.sockets.aSocket
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.utils.io.InternalAPI
+import kotlinx.io.readString
 import kotlinx.serialization.json.Json
 
 @Serializable
@@ -81,8 +86,10 @@ suspend fun createClient() {
                     val obj = decodeFromString<Message>(event.data!!)
 
                     // Здесь будет проверка события. Если про нас, то создаём сокет с сервером по нужному порту
-                    if (obj.nickname == "admin") {
-                        sendingData.receiveData("5.165.249.136", 2869)
+                    if (obj.nickname == TokenStorage.getUser()) {
+                        sendingData.receiveData()
+
+                        //sendingData.receiveDataConfirm = true
                         //client.close()
                     }
                 }
@@ -143,8 +150,6 @@ suspend fun loginResponse(username: String, password: String): HttpStatusCode {
     return response.status
 }
 
-
-@OptIn(InternalAPI::class)
 suspend fun registResponse(username: String, password: String): HttpStatusCode {
 
     val url = "http://5.165.249.136:2868/register"

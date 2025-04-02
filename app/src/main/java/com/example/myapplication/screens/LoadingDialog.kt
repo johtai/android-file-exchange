@@ -43,8 +43,6 @@ fun LoadingDialog(isFinished: Boolean, onDismiss: () -> Unit) {
                 ) {
                     if (!isFinished) {
                         CircularProgressIndicator()
-                    } else {
-                        Text("Загрузка завершена!", fontSize = 5.em)
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))

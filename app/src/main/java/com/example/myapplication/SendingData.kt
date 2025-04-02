@@ -3,10 +3,12 @@ package com.example.myapplication
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
+import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
 import io.ktor.network.selector.SelectorManager
 import io.ktor.network.sockets.Datagram
@@ -17,8 +19,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.io.readByteArray
 import kotlinx.io.readString
-import java.io.File
-import java.io.FileOutputStream
 import java.util.UUID
 
 
@@ -30,7 +30,10 @@ object sendingData {
     var allPackages by mutableIntStateOf(1)
     var sentPackages by mutableIntStateOf(0)
     var resentPackages by mutableIntStateOf(0)
-    var douwnloadingInProcces by mutableStateOf(false)
+    var ip by mutableStateOf("5.165.249.136")
+    var port by mutableIntStateOf(2869)
+    var downloadingInProcess by mutableStateOf(false)
+    var receiveDataConfirm by mutableStateOf(false)
 
     fun setData (context: Context, uri: Uri) {
         try {
@@ -51,7 +54,8 @@ object sendingData {
         }
     }
 
-    suspend fun sendData(ip: String, port: Int){
+
+    suspend fun sendData(nickname: String){
 
         sentPackages = 0
         allPackages = byteArray.size
@@ -66,17 +70,17 @@ object sendingData {
                 break
             }
 
-            //while (true)
-            //{
-            //    val nickname = "admin1"
-            //    socket.send(Datagram(ByteReadPacket(nickname.encodeToByteArray()), InetSocketAddress(ip, port)))
-            //    val packet = socket.receive()
-           //     if (packet.packet.readString() == nickname)
-            //    {
-            //        println("Имя получателя дошло успешно")
-            //        break;
-            //    }
-           // }
+            while (true)
+            {
+
+                socket.send(Datagram(ByteReadPacket(nickname.encodeToByteArray()), InetSocketAddress(ip, port)))
+                val packet = socket.receive()
+                if (packet.packet.readString() == nickname)
+                {
+                    println("Имя получателя дошло успешно")
+                    break;
+                }
+            }
 
             while (true)
             {
@@ -130,8 +134,9 @@ object sendingData {
         }
     }
 
-    suspend fun receiveData(ip: String, port: Int){
-        douwnloadingInProcces = true
+
+    suspend fun receiveData(){
+        downloadingInProcess = true
         filename = "Unknown"
         byteArray = List<ByteArray>(size = 0, { byteArrayOf(3)})
         allPackages = 0
@@ -169,7 +174,6 @@ object sendingData {
         )
         allPackages = messageCount.toInt()
         println("messageCount: $messageCount")
-        allPackages = messageCount.toInt()
         val listBytes = mutableListOf<ByteArray>()
 
         for (i in 0 ..<allPackages) {
@@ -196,8 +200,7 @@ object sendingData {
         }
         socket.close()
         byteArray = listBytes
-        douwnloadingInProcces = false
-
+        downloadingInProcess = false
         //saveFile(filename, listBytes)
     }
 
@@ -238,5 +241,9 @@ object sendingData {
 
         // Вместо filename нужен путь
         //File(filename).writeBytes(file);
+    }
+
+    suspend fun sentRejection() {
+
     }
 }

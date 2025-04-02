@@ -11,7 +11,7 @@
     <string name="choose_file">Выбрать файл</string>
     <string name="choosing_file">Выбранный файл: </string>
     <string name="close">Закрыть</string>
-    <string name="whom">Кому</string>
+    <string name="whom">Имя отправителя</string>
     <string name="input_username">Имя пользователя</string>
 
     //Вход
