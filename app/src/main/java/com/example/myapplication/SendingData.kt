@@ -200,8 +200,9 @@ object sendingData {
         }
         socket.close()
         byteArray = listBytes
-        downloadingInProcess = false
+        downloadingInProcess = true
         //saveFile(filename, listBytes)
+
     }
 
     fun splitFile(context: Context, path: String, chunkSize: Int = 1428): List<ByteArray> {

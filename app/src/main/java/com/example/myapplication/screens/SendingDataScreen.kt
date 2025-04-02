@@ -3,6 +3,7 @@ package com.example.myapplication.screens
 import android.content.Context
 import android.net.Uri
 import android.os.ParcelFileDescriptor
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -315,8 +316,12 @@ fun SendingDataScreen(navController: NavController) {
     }
 
     if(sendingData.receiveDataConfirm){
-        ConfirmReceiveDialog({sendingData.receiveDataConfirm = false})
+        //ConfirmReceiveDialog({sendingData.receiveDataConfirm = false})
+        Toast.makeText(LocalContext.current, "файл принят", Toast.LENGTH_SHORT).show()
+        sendingData.receiveDataConfirm = false
     }
+
+
 }
 
 
