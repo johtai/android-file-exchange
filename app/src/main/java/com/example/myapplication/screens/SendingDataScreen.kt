@@ -211,7 +211,7 @@ fun SendingDataScreen(navController: NavController) {
                 .padding(innerPadding),
             horizontalAlignment = Alignment.Start,
         ) {
-            Text(text = TokenStorage.getUser()!!)
+            Text(text = TokenStorage.getUser().toString())
             Spacer(modifier = Modifier.height(5.dp))
 
             Text(
