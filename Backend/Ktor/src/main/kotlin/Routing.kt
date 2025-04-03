@@ -2,30 +2,21 @@ package com.example
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import com.example.db.UserDAO
-import com.example.db.UserTable
-import com.example.db.suspendTransaction
+import com.example.db.*
 import com.example.model.*
 import io.ktor.http.*
-import io.ktor.serialization.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
-import io.ktor.server.plugins.cors.routing.*
-import io.ktor.server.plugins.swagger.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.server.sessions.*
 import io.ktor.server.sse.*
 import io.ktor.sse.*
-import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.postgresql.util.MD5Digest
 import java.io.File
-import java.lang.IllegalArgumentException
 import java.util.*
 import java.math.BigInteger
 import java.security.MessageDigest
@@ -35,6 +26,17 @@ fun md5(input: String): String{
     val md = MessageDigest.getInstance("MD5")
     return BigInteger(1, md.digest(input.toByteArray())).toString(16).padStart(32, '0')
 }
+
+@Serializable
+data class AuthResponse(
+    val token: String,
+    val refreshToken:String
+)
+
+@Serializable
+data class RefreshRequest(
+    val refreshToken: String
+)
 
 fun Application.configureRouting(repository: UserRepository)
 {
@@ -47,34 +49,123 @@ fun Application.configureRouting(repository: UserRepository)
 
         // Получение JWT-токена по имени пользователя и паролю
         post("/login"){
-            val user = call.receive<User>()
-            // Check username and password
-            val userDAO = suspendTransaction { UserDAO.find { UserTable.username eq user.username}.firstOrNull()}
-            if (userDAO != null && userDAO.password ==  md5(user.password)){
-                val token = JWT.create()
+            println("Try to /login")
+            try {
+                val user = call.receive<User>()
+                // Check username and password
+                val userDAO = suspendTransaction { UserDAO.find { UserTable.username eq user.username }.firstOrNull() }
+                if (userDAO != null && userDAO.password == md5(user.password))
+                {
+                    val refreshTokenRepository = PostgresRefreshTokenRepository() //отсюда берём CRUD операции с refreshToken table
+                    val storedToken = refreshTokenRepository.findByName(user.username)
+
+                    //Если токен существует, то удаляем его
+                    if(storedToken != null)
+                    {
+                     refreshTokenRepository.removeRefreshToken(user.username)
+                    }
+
+                    val accessToken = JWT.create()
+                        .withAudience(audience)
+                        .withIssuer(issuer)
+                        .withClaim("username", user.username)
+                        .withExpiresAt(Date(System.currentTimeMillis() + 15 * 60 * 1000)) // 15 минут
+                        .sign(Algorithm.HMAC256(secret))
+
+                    val refreshToken = UUID.randomUUID().toString()
+                    val refreshTokenExpiresAt = Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000) //7 days
+
+                    // save refresh token at BD
+                    suspendTransaction {
+                        RefreshTokenDAO.new {
+                            username = user.username
+                            token = refreshToken
+                            expiresAt = refreshTokenExpiresAt.toLocalDate()
+                        }
+                    }
+
+                    println("Login with create JWT was Successfully")
+                    call.respond(AuthResponse(accessToken, refreshToken))
+                } else {
+                    call.respond(HttpStatusCode.Unauthorized)
+                }
+            }catch (e: Exception){
+                println("Error in /login: ${e.message}")
+                println(e.printStackTrace())
+                call.respond(HttpStatusCode.InternalServerError)
+            }
+        }
+
+        //endpoint для обновления токена
+        post("/refresh"){
+            println("Try to /refresh")
+            val request = call.receive<RefreshRequest>()
+            var refreshTokenRepository = PostgresRefreshTokenRepository()
+
+            // Проверяем refresh token в БД
+            try {
+
+                //val storedToken = suspendTransaction { RefreshTokenDAO.find { RefreshTokenTable.token eq request.refreshToken} }.firstOrNull()
+                val storedToken = refreshTokenRepository.findByToken(request.refreshToken)
+                println("storedToken = $storedToken")
+                if (storedToken == null) {//storedToken.expiresAt){
+                    call.respond(HttpStatusCode.Unauthorized)
+                    return@post
+                }
+
+
+                // Удаляем использованный Refresh token
+                refreshTokenRepository.removeRefreshToken(storedToken.username)
+
+                // Генерация нового access token
+                val newAccessToken = JWT.create()
                     .withAudience(audience)
                     .withIssuer(issuer)
-                    .withClaim("username", user.username)
-                    .withExpiresAt(Date(System.currentTimeMillis() + 60000))
+                    .withClaim("username", storedToken.username)
+                    .withExpiresAt(Date(System.currentTimeMillis() + 15 * 60 * 1000)) // 15 минут
                     .sign(Algorithm.HMAC256(secret))
-                call.respond(hashMapOf("token" to token))
-            } else{
-                call.respond(HttpStatusCode.Unauthorized)
+
+
+                val newRefreshToken = UUID.randomUUID().toString()
+                val newRefreshTokenExpiresAt = Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000) //7 days
+
+                //Сохранение refresh token в БД
+                suspendTransaction {
+                    RefreshTokenDAO.new {
+                        username = storedToken.username
+                        token = newRefreshToken
+                        expiresAt = newRefreshTokenExpiresAt.toLocalDate()
+                    }
+                }
+
+                call.respond(AuthResponse(newAccessToken, newRefreshToken))
+            } catch (e : Exception){
+                println("Error in /refresh: ${e.message}")
+                println(e.printStackTrace())
+                call.respond(HttpStatusCode.InternalServerError)
             }
         }
 
 
         // регистрация на сайте через имя пользователя и пароль
         post("/register"){
-            val user = call.receive<User>()
-            val pswd = md5(user.password)
-            suspendTransaction{
-                UserDAO.new {
-                    username = user.username
-                    password = pswd
+            println("Try to /register")
+            try {
+                val user = call.receive<User>()
+                val pswd = md5(user.password)
+                suspendTransaction {
+                    UserDAO.new {
+                        username = user.username
+                        password = pswd
+                    }
                 }
+                println("New user was created!")
+                call.respond(HttpStatusCode.Created)
+            }catch (e: Exception){
+                println("Error in /registed ${e.message}")
+                println(e.printStackTrace())
+                call.respond(HttpStatusCode.InternalServerError)
             }
-            call.respond(HttpStatusCode.Created)
 
 //            val username = call.parameters["username"]
 //            val password = call.parameters["password"]
@@ -94,11 +185,13 @@ fun Application.configureRouting(repository: UserRepository)
 
         sse("/events") {
             call.application.environment.log.info("/events was touched")
-            val message = Message("admin")
+            val message = Message("sse_connected")
             val jsonMessage = Json.encodeToString(message)
             send(ServerSentEvent(event = "jsonEvent", data = jsonMessage))
+            
             for(message in messageChannel){
                //val event = ServerSentEvent(event = "jsonevent", )
+               println("отправка message admin:  $message")
                send(ServerSentEvent(event = "jsonEvent", data = message))
             }
 
@@ -113,6 +206,7 @@ fun Application.configureRouting(repository: UserRepository)
             get("/hello"){
                 //val userSession = call.principal<UserSession>()
                 val principal = call.principal<JWTPrincipal>()
+                println(principal)
                 val username = principal!!.payload.getClaim("username").asString()
                 val expiresAt = principal.expiresAt?.time?.minus(System.currentTimeMillis())
                 call.respondText("Hello, $username! Token is expired at $expiresAt ms.")
@@ -123,7 +217,7 @@ fun Application.configureRouting(repository: UserRepository)
 
         // Начальная страница
         get("/"){
-            call.respondText("Hello, ${call.principal<CustomPrincipal>()?.userName}!")
+            call.respondText("Hello!, ${call.principal<CustomPrincipal>()?.userName}!")
         }
 
 

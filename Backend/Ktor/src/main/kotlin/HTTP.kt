@@ -11,8 +11,10 @@ fun Application.configureHTTP() {
     routing {
         //swaggerUI(path = "openapi", swaggerFile = "D:\\programming2025\\ktor\\ktor3\\src\\main\\resources\\openapi\\documentation.yaml")
         swaggerUI(path = "openapi", swaggerFile = "openapi/documentation.yaml")
+
     }
     install(CORS) {
+
         allowMethod(HttpMethod.Options)
         allowMethod(HttpMethod.Put)
         allowMethod(HttpMethod.Delete)

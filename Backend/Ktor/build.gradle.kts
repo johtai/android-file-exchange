@@ -48,6 +48,8 @@ dependencies {
     implementation("io.ktor:ktor-server-sse:$ktor_version")
     implementation("ch.qos.logback:logback-classic:1.5.9")
     implementation("io.ktor:ktor-network:$ktor_version")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
+    implementation("org.jetbrains.exposed:exposed-java-time:0.41.1")
 
 
 
