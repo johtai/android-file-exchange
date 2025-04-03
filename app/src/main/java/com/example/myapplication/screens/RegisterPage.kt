@@ -202,7 +202,7 @@ fun RegisterScreen(navController: NavController) {
             onClick = {
 
                 when {
-                    name.value.text.isEmpty() -> {
+                    name.value.text.trim().isEmpty() -> {
                         nameErrorState.value = true
                     }
 //
@@ -210,7 +210,7 @@ fun RegisterScreen(navController: NavController) {
 //                        emailErrorState.value = true
 //                    }
 
-                    password.value.text.isEmpty() -> {
+                    password.value.text.trim().isEmpty() -> {
                         passwordErrorState.value = true
                     }
 
@@ -291,7 +291,7 @@ fun LoadingRegisterDialog() {
         Card(
             shape = RoundedCornerShape(16.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
+            colors = CardDefaults.cardColors(containerColor = colorResource(R.color.background))
         ) {
             Row(
                 modifier = Modifier
@@ -301,7 +301,8 @@ fun LoadingRegisterDialog() {
             ) {
                 CircularProgressIndicator(modifier = Modifier.size(32.dp))
                 Spacer(modifier = Modifier.width(16.dp))
-                Text("Попытка регистрации...", fontSize = 18.sp, fontWeight = FontWeight.Medium)
+                Text(stringResource(R.string.register_loading), fontSize = 18.sp, fontWeight = FontWeight.Medium,
+                    fontFamily = HeadingFont)
             }
         }
     }
@@ -312,6 +313,7 @@ fun LoadingRegisterDialog() {
 @Composable
 fun RegistPrewiew() {
     MyApplicationTheme {
-        RegisterScreen(rememberNavController())
+        LoadingRegisterDialog()
+        //RegisterScreen(rememberNavController())
     }
 }

@@ -148,7 +148,7 @@ object sendingData {
 
         socket.send(
             Datagram(
-                packet = ByteReadPacket(array = "Здесь будет JVT токен".encodeToByteArray()),
+                packet = ByteReadPacket(array =  TokenStorage.getUser().toString().encodeToByteArray()),
                 address = InetSocketAddress(ip, port)
             )
         )

@@ -24,6 +24,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -49,6 +50,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.MAX_FILE_SIZE
@@ -146,14 +148,14 @@ fun LogoutConfirm(navController: NavController, onDismiss: () -> Unit, ){
             TextButton(onClick = {
                 onDismiss()
                 onLogoutClick(navController)
-            }) { Text("Выйти") }
+            }) { Text(stringResource(R.string.logout), color = Color.Red, fontFamily = HeadingFont) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Отмена") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel), fontFamily = HeadingFont) }
         },
-        title = { Text("Выход") },
-        text = { Text("Вы уверены что хотите выйти?") },
-
+        //title = { Text(stringResource(R.string.logout)) },
+        text = { Text(stringResource(R.string.logout_confirm), fontFamily = HeadingFont, fontSize = 15.sp) },
+        containerColor = colorResource(R.color.background)
         )
 }
 
@@ -163,6 +165,7 @@ fun LogoutConfirm(navController: NavController, onDismiss: () -> Unit, ){
 fun SendingDataScreen(navController: NavController) {
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+    var errorLogin = remember { mutableStateOf(false) }
     var ipAddress by remember { mutableStateOf("5.165.249.136") }
     var port by remember { mutableStateOf("2869") }
     var username by remember { mutableStateOf("") }
@@ -176,6 +179,7 @@ fun SendingDataScreen(navController: NavController) {
     }
 
     Scaffold(modifier = Modifier.fillMaxSize(),
+        containerColor = colorResource(R.color.background),
         topBar = {
             TopAppBar(
                 title = {
@@ -211,8 +215,8 @@ fun SendingDataScreen(navController: NavController) {
                 .padding(innerPadding),
             horizontalAlignment = Alignment.Start,
         ) {
-            Text(text = TokenStorage.getUser().toString())
-            Spacer(modifier = Modifier.height(5.dp))
+//            Text(text = TokenStorage.getUser().toString())
+//            Spacer(modifier = Modifier.height(5.dp))
 
             Text(
                 stringResource(R.string.whom),
@@ -220,8 +224,18 @@ fun SendingDataScreen(navController: NavController) {
                 fontFamily = HeadingFont,
                 color = colorResource(R.color.grey_text)
             )
-            InputField(username, { username = it }, stringResource(R.string.input_username))
-            //InputField(port, { port = it }, stringResource(R.string.num_of_port))
+            OutlinedTextField(
+                value = username,
+                onValueChange = {
+                    if(errorLogin.value)
+                        errorLogin.value = false
+                    username = it },
+                label = { Text(stringResource(R.string.input_username)) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                isError = errorLogin.value
+            )
 
             Spacer(modifier = Modifier.height(5.dp))
 
@@ -272,25 +286,28 @@ fun SendingDataScreen(navController: NavController) {
             ) {
                 Button(                             //самая главная кнопка "отправить"
                     onClick = {
-                        showDialog = true
-                        isFinished = false
-                        scope.launch {
-                            runCatching {
-                                if (sendingData.byteArray.isEmpty()) {
-                                    throw Exception("Сначала выберите файл")
+                        if(username.trim().isEmpty()){
+                            errorLogin.value = true
+                        } else {
+                            showDialog = true
+                            isFinished = false
+                            scope.launch {
+                                runCatching {
+                                    if (sendingData.byteArray.isEmpty()) {
+                                        throw Exception("Сначала выберите файл")
+                                    }
+                                    sendingData.sendData(username.trim())
+                                    isFinished = true
+                                }.onFailure { e ->
+                                    showDialog = false
+                                    snackbarHostState.showSnackbar(
+                                        message = e.message.toString(),
+                                        actionLabel = "Закрыть",
+                                        duration = SnackbarDuration.Indefinite
+                                    )
                                 }
-                                sendingData.sendData(username.trim())
-                                isFinished = true
-                            }.onFailure { e ->
-                                showDialog = false
-                                snackbarHostState.showSnackbar(
-                                    message = e.message.toString(),
-                                    actionLabel = "Закрыть",
-                                    duration = SnackbarDuration.Indefinite
-                                )
                             }
                         }
-
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.blue_button)),
                     modifier = Modifier.fillMaxWidth()
@@ -329,7 +346,7 @@ fun SendingDataScreen(navController: NavController) {
 @Composable
 fun SendPreview() {
     MyApplicationTheme {
-
-        SendingDataScreen(rememberNavController())
+        LogoutConfirm(rememberNavController()) { }
+        //SendingDataScreen(rememberNavController())
     }
 }

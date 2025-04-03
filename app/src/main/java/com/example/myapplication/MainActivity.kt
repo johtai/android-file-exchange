@@ -9,7 +9,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.screens.LoginScreen
-import com.example.myapplication.screens.ReceiveDataScreen
 import com.example.myapplication.screens.RegisterScreen
 import com.example.myapplication.screens.Routes
 import com.example.myapplication.screens.SendingDataScreen
@@ -43,6 +42,5 @@ fun LoginAndRegistration() {
         composable(Routes.Login.route, content =  { LoginScreen(navController) })
         composable(Routes.Regist.route, content = { RegisterScreen(navController) })
         composable(Routes.Send.route, content = { SendingDataScreen(navController) })
-        composable(Routes.Receive.route, content = { ReceiveDataScreen(navController) })
     })
 }

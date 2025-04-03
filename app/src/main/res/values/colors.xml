@@ -12,4 +12,5 @@
     <color name="blue_button">#324962</color>
     <color name="light_blue_button">#CEE1FB</color>
     <color name="white_button">#F8F6FD</color>
+    <color name="background">#F8F8F8</color>
 </resources>
