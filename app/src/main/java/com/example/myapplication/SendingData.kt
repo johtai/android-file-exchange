@@ -80,7 +80,7 @@ object sendingData {
             {
                 try {
                     socket.send(Datagram(ByteReadPacket(nickname.encodeToByteArray()), InetSocketAddress(ip, port)))
-                    withTimeout(2000) {
+                    withTimeout(3000) {
                         packet = socket.receive()
                     }
                 }
@@ -103,7 +103,7 @@ object sendingData {
             {
                 try {
                     socket.send(Datagram(ByteReadPacket(filename.encodeToByteArray()), InetSocketAddress(ip, port)))
-                    withTimeout(2000) {
+                    withTimeout(3000) {
                         packet = socket.receive()
                     }
                 }
@@ -125,7 +125,7 @@ object sendingData {
             {
                 try {
                     socket.send(Datagram(ByteReadPacket(byteArray.size.toString().encodeToByteArray()), InetSocketAddress(ip, port)))
-                    withTimeout(2000) {
+                    withTimeout(3000) {
                         packet = socket.receive()
                     }
                 }
@@ -150,7 +150,7 @@ object sendingData {
                     socket.send(Datagram(ByteReadPacket(byteArray[i]), InetSocketAddress(ip, port)))
                     println("$i пакет отправлен")
                     ++sentPackages
-                    withTimeout(2000) {
+                    withTimeout(3000) {
                         packet = socket.receive()
                     }
                 }
@@ -190,58 +190,147 @@ object sendingData {
         resentPackages = 0
         val selectorManager = SelectorManager(Dispatchers.IO)
         val socket = aSocket(selectorManager).udp().bind(InetSocketAddress("0.0.0.0", 5089))
+        var packet: Datagram? = null
+        var prevPacket: Datagram? = null
 
-        socket.send(
-            Datagram(
-                packet = ByteReadPacket(array = "Здесь будет JVT токен".encodeToByteArray()),
-                address = InetSocketAddress(ip, port)
-            )
-        )
-        var packet = socket.receive()
-        filename = packet.packet.readString()
+        while (true)
+        {
+            try {
+                socket.send(
+                    Datagram(
+                        packet = ByteReadPacket(array = "Здесь будет JVT токен".encodeToByteArray()),
+                        address = InetSocketAddress(ip, port)
+                    )
+                )
+                withTimeout(3000) {
+                    packet = socket.receive()
+                }
+            }
+            catch (e: TimeoutCancellationException) { // Exception
+                println(e.message)
+            }
 
-        socket.send(
-            Datagram(
-                packet = ByteReadPacket(array = filename.encodeToByteArray()),
-                address = packet.address
-            )
-        )
+            if (packet != null)
+            {
+                if (packet!!.packet.readString() == "okey")
+                {
+                    println("Адрес получателя дошёл")
+                    prevPacket = packet
+                    break;
+                }
+            }
+        }
+
+        while (true)
+        {
+            packet = socket.receive()
+            if (packet!!.equals(prevPacket))
+            {
+                socket.send(
+                    Datagram(
+                        packet = ByteReadPacket(array = "okey".encodeToByteArray()),
+                        address = packet!!.address
+                    )
+                )
+            }
+            else
+            {
+                filename = packet!!.packet.readString()
+                socket.send(
+                    Datagram(
+                        packet = ByteReadPacket(array = filename.encodeToByteArray()),
+                        address = packet!!.address
+                    )
+                )
+                prevPacket = packet
+                break
+            }
+        }
+
         println("File name received: $filename")
 
-        packet = socket.receive()
+        val messageCount:String
 
-        val messageCount = packet.packet.readString()
-        socket.send(
-            Datagram(
-                packet = ByteReadPacket(array = messageCount.encodeToByteArray()),
-                address = packet.address
-            )
-        )
+        while (true)
+        {
+            packet = socket.receive()
+            if (packet!!.equals(prevPacket))
+            {
+                socket.send(
+                    Datagram(
+                        packet = ByteReadPacket(array = filename.encodeToByteArray()),
+                        address = packet!!.address
+                    )
+                )
+            }
+            else
+            {
+                messageCount = packet!!.packet.readString()
+                socket.send(
+                    Datagram(
+                        packet = ByteReadPacket(array = messageCount.encodeToByteArray()),
+                        address = packet!!.address
+                    )
+                )
+                prevPacket = packet
+                break
+            }
+        }
+
         allPackages = messageCount.toInt()
         println("messageCount: $messageCount")
         val listBytes = mutableListOf<ByteArray>()
 
         for (i in 0 ..<allPackages) {
-            packet = socket.receive()
-            //println("packet:$packet")
-            val numMessage = packet.packet.readByteArray(4)
-            val numOfPacket = (numMessage[3].toInt() shl 24) or
-                    (numMessage[2].toInt() and 0xff shl 16) or
-                    (numMessage[1].toInt() and 0xff shl 8) or
-                    (numMessage[0].toInt() and 0xff)
 
-            val dataMessage = packet.packet.readByteArray()
+            while (true)
+            {
+                packet = socket.receive()
+                if (packet!!.equals(prevPacket))
+                {
+                    if (i == 0)
+                    {
+                        socket.send(
+                            Datagram(
+                                packet = ByteReadPacket(array = messageCount.encodeToByteArray()),
+                                address = packet!!.address
+                            )
+                        )
+                    }
+                    else
+                    {
+                        socket.send(
+                            Datagram(
+                                packet = ByteReadPacket(
+                                    array = (i-1).toString().encodeToByteArray()
+                                ), address = packet!!.address
+                            )
+                        )
+                    }
+                }
+                else
+                {
+                    val numMessage = packet!!.packet.readByteArray(4)
+                    val numOfPacket = (numMessage[3].toInt() shl 24) or
+                            (numMessage[2].toInt() and 0xff shl 16) or
+                            (numMessage[1].toInt() and 0xff shl 8) or
+                            (numMessage[0].toInt() and 0xff)
 
-            println("nop:$numOfPacket")
-            listBytes.add(dataMessage)
-            socket.send(
-                Datagram(
-                    packet = ByteReadPacket(
-                        array = numOfPacket.toString().encodeToByteArray()
-                    ), address = packet.address
-                )
-            )
-            sentPackages++
+                    val dataMessage = packet!!.packet.readByteArray()
+
+                    println("nop:$numOfPacket")
+                    listBytes.add(dataMessage)
+                    socket.send(
+                        Datagram(
+                            packet = ByteReadPacket(
+                                array = numOfPacket.toString().encodeToByteArray()
+                            ), address = packet!!.address
+                        )
+                    )
+                    sentPackages++
+                    prevPacket = packet
+                }
+            }
         }
         socket.close()
         byteArray = listBytes
