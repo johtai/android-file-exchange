@@ -3,12 +3,14 @@ package com.example.myapplication.screens
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -104,9 +106,21 @@ fun ReceiveDataDialog(onDismiss: () -> Unit){
                 { Text(stringResource(R.string.cancel), fontFamily = HeadingFont) }
             }
         },
-        title = {Text(
-            if(sendingData.downloadingInProcess) stringResource(R.string.downloading) else stringResource(R.string.loading_ready), fontFamily = HeadingFont
-        )},
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(painter =
+                if(sendingData.downloadingInProcess)
+                    painterResource(R.drawable.baseline_download_24)
+                else
+                    painterResource(R.drawable.baseline_download_done_24),
+                    contentDescription = "download")
+                Spacer(Modifier.width(15.dp))
+                Text(
+                    if (sendingData.downloadingInProcess) stringResource(R.string.downloading) else stringResource(
+                        R.string.loading_ready
+                    ), fontFamily = HeadingFont
+                )
+            }},
         text = {
             Column(
                 modifier = Modifier.fillMaxWidth(),
@@ -136,4 +150,5 @@ fun ReceiveDataDialog(onDismiss: () -> Unit){
 fun ReceiveDataAD(){
     var showRDAL by remember { mutableStateOf(false) }
     ReceiveDataDialog({showRDAL = false})
+
 }

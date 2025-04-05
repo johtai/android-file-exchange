@@ -48,8 +48,8 @@ fun MyApplicationTheme(
             dynamicLightColorScheme(context)
         }
 
-        //darkTheme -> DarkColorScheme
-        darkTheme -> LightColorScheme
+        darkTheme -> DarkColorScheme
+        //darkTheme -> LightColorScheme
         else -> LightColorScheme
     }
 

@@ -183,18 +183,8 @@ fun LoginScreen(navController: NavController) {
                 ))
             }
         }
-
-//        ClickableText(
-//            text = AnnotatedString("Forgot password?"),
-//            onClick = { },
-//            style = TextStyle(
-//                fontSize = 14.sp,
-//                fontFamily = FontFamily.Default
-//            )
-//        )
     }
     if(showDialog){
-        //LoadingLoginDialog(onDismiss = {showDialog = false}, errorMessage)
         LoadingLoginDialog()
     }
 }
@@ -230,7 +220,7 @@ fun LoadingLoginDialog() {
 @Composable
 fun AuthPreview() {
     MyApplicationTheme {
-        LoadingLoginDialog()
-        //LoginScreen(rememberNavController())
+        //LoadingLoginDialog()
+        LoginScreen(rememberNavController())
     }
 }
