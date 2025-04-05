@@ -153,7 +153,6 @@ fun LogoutConfirm(navController: NavController, onDismiss: () -> Unit, ){
         dismissButton = {
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel), fontFamily = HeadingFont) }
         },
-        //title = { Text(stringResource(R.string.logout)) },
         text = { Text(stringResource(R.string.logout_confirm), fontFamily = HeadingFont, fontSize = 15.sp) },
         containerColor = colorResource(R.color.background)
         )
@@ -333,9 +332,7 @@ fun SendingDataScreen(navController: NavController) {
     }
 
     if(sendingData.receiveDataConfirm){
-        //ConfirmReceiveDialog({sendingData.receiveDataConfirm = false})
-        Toast.makeText(LocalContext.current, "файл принят", Toast.LENGTH_SHORT).show()
-        sendingData.receiveDataConfirm = false
+        ReceiveDataDialog(LocalContext.current, {sendingData.receiveDataConfirm = false})
     }
 
 

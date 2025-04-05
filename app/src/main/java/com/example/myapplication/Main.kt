@@ -87,10 +87,8 @@ suspend fun createClient() {
 
                     // Здесь будет проверка события. Если про нас, то создаём сокет с сервером по нужному порту
                     if (obj.nickname == TokenStorage.getUser()) {
+                        sendingData.receiveDataConfirm = true
                         sendingData.receiveData()
-
-                        //sendingData.receiveDataConfirm = true
-                        //client.close()
                     }
                 }
             }

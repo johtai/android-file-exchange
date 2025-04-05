@@ -1,5 +1,7 @@
 package com.example.myapplication.screens
 
+import android.content.Context
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -56,10 +59,6 @@ fun ConfirmReceiveDialog(onDismiss: () -> Unit){
             scope.launch {
                 onDismiss()
                 sendingData.receiveData()
-//                navController.navigate(Routes.Login.route) {
-//                    popUpTo(navController.graph.startDestinationId)
-//                    launchSingleTop = true
-//                }
             }
         })
         {Text(stringResource(R.string.yes), fontFamily = HeadingFont)} },
@@ -81,28 +80,33 @@ fun ConfirmReceiveDialog(onDismiss: () -> Unit){
 }
 
 @Composable
-fun ReceiveDataDialog(onDismiss: () -> Unit){
+fun ReceiveDataDialog(context: Context, onDismiss: () -> Unit){
 
     val scope = rememberCoroutineScope()
+
     AlertDialog(
         onDismissRequest = {},
         confirmButton = {
             if (!sendingData.downloadingInProcess) {
                 TextButton(onClick = {
                     scope.launch {
-                        sendingData.saveFile()
+                        var message: String = ""
+                        try {
+                            sendingData.saveFile()
+                            message = "Файл был успешно сохранен"
+                        } catch (e:Exception){
+                            message = e.message.toString()
+                        }
+                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                     }
+                    onDismiss()
                 })
                 { Text(stringResource(R.string.save_file), fontFamily = HeadingFont) }
             }
         },
         dismissButton = {
             if(!sendingData.downloadingInProcess){
-                TextButton(onClick = {
-                    scope.launch {
-                        sendingData.saveFile()
-                    }
-                })
+                TextButton(onClick = onDismiss)
                 { Text(stringResource(R.string.cancel), fontFamily = HeadingFont) }
             }
         },
@@ -149,6 +153,6 @@ fun ReceiveDataDialog(onDismiss: () -> Unit){
 @Composable
 fun ReceiveDataAD(){
     var showRDAL by remember { mutableStateOf(false) }
-    ReceiveDataDialog({showRDAL = false})
+    ReceiveDataDialog(LocalContext.current, {showRDAL = false})
 
 }
