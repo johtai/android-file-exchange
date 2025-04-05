@@ -56,7 +56,8 @@ fun LoginScreen(navController: NavController) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var showDialog by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf("") }
+    val nameErrorState = remember { mutableStateOf(false) }
+    val passwordErrorState = remember { mutableStateOf(false) }
     BackHandler(enabled = true) {  }
 
     Column(
@@ -80,12 +81,20 @@ fun LoginScreen(navController: NavController) {
         OutlinedTextField(
             label = { Text(text = stringResource(R.string.login_mes)) },
             value = username.value,
-            onValueChange = { username.value = it })
+            onValueChange = {
+                if (nameErrorState.value) {
+                    nameErrorState.value = false
+                }
+                username.value = it },
+            isError = nameErrorState.value)
 
         Spacer(modifier = Modifier.height(20.dp))
         OutlinedTextField(
             value = password.value,
             onValueChange = {
+                if (passwordErrorState.value) {
+                    passwordErrorState.value = false
+                }
                 password.value = it
             },
             label = {
@@ -102,37 +111,47 @@ fun LoginScreen(navController: NavController) {
                     )
                 }
             },
-            visualTransformation = if (passwordVisibility.value) PasswordVisualTransformation() else VisualTransformation.None
+            visualTransformation = if (passwordVisibility.value) PasswordVisualTransformation() else VisualTransformation.None,
+            isError = passwordErrorState.value
         )
 
         Spacer(modifier = Modifier.height(20.dp))
         Box(modifier = Modifier.padding(40.dp, 0.dp, 40.dp, 0.dp)) {
             Button(
                 onClick = {
-                    showDialog = true
-                    scope.launch {
-                        try {
-                            val status = loginResponse(username.value.text.trim(), password.value.text.trim())
-                            showDialog = false
-                            if (status == HttpStatusCode.OK) {
-                            //if(true){
-                                TokenStorage.saveUser(username.value.text.trim())
-                                navController.navigate(Routes.Send.route){
-                                    popUpTo(navController.graph.startDestinationId)
-                                    launchSingleTop = true
+                    if(username.value.text.trim().isEmpty())
+                        nameErrorState.value = true
+                    else if(password.value.text.trim().isEmpty())
+                        passwordErrorState.value = true
+                    else {
+                        showDialog = true
+                        scope.launch {
+                            try {
+                                val status = loginResponse(
+                                    username.value.text.trim(),
+                                    password.value.text.trim()
+                                )
+                                showDialog = false
+                                if (status == HttpStatusCode.OK) {
+                                    //if(true){
+                                    TokenStorage.saveUser(username.value.text.trim())
+                                    navController.navigate(Routes.Send.route) {
+                                        popUpTo(navController.graph.startDestinationId)
+                                        launchSingleTop = true
+                                    }
                                 }
+
+                            } catch (e: Exception) {
+                                showDialog = false
+                                Toast.makeText(
+                                    context,
+                                    e.message,
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
 
-                        } catch (e:Exception){
-                            showDialog = false
-                            Toast.makeText(
-                                context,
-                                e.message,
-                                Toast.LENGTH_SHORT
-                            ).show()
                         }
-
-                } },
+                    } },
                 shape = RoundedCornerShape(50.dp),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -164,18 +183,8 @@ fun LoginScreen(navController: NavController) {
                 ))
             }
         }
-
-//        ClickableText(
-//            text = AnnotatedString("Forgot password?"),
-//            onClick = { },
-//            style = TextStyle(
-//                fontSize = 14.sp,
-//                fontFamily = FontFamily.Default
-//            )
-//        )
     }
     if(showDialog){
-        //LoadingLoginDialog(onDismiss = {showDialog = false}, errorMessage)
         LoadingLoginDialog()
     }
 }
@@ -187,7 +196,7 @@ fun LoadingLoginDialog() {
         Card(
             shape = RoundedCornerShape(16.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
+            colors = CardDefaults.cardColors(containerColor = colorResource(R.color.background))
         ) {
             Row(
                 modifier = Modifier
@@ -197,7 +206,11 @@ fun LoadingLoginDialog() {
             ) {
                 CircularProgressIndicator(modifier = Modifier.size(32.dp))
                 Spacer(modifier = Modifier.width(16.dp))
-                Text("Вход...", fontSize = 18.sp, fontWeight = FontWeight.Medium)
+                Text(stringResource(R.string.login_loading),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Medium,
+                    fontFamily = HeadingFont
+                    )
             }
         }
     }
@@ -207,6 +220,7 @@ fun LoadingLoginDialog() {
 @Composable
 fun AuthPreview() {
     MyApplicationTheme {
+        //LoadingLoginDialog()
         LoginScreen(rememberNavController())
     }
 }

@@ -3,12 +3,14 @@ package com.example.myapplication.screens
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -37,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.example.myapplication.R
@@ -59,7 +62,7 @@ fun ConfirmReceiveDialog(onDismiss: () -> Unit){
 //                }
             }
         })
-        {Text("Да")} },
+        {Text(stringResource(R.string.yes), fontFamily = HeadingFont)} },
         dismissButton = {
             TextButton(onClick = {
                 scope.launch {
@@ -67,11 +70,13 @@ fun ConfirmReceiveDialog(onDismiss: () -> Unit){
                     sendingData.sentRejection()
                 }
             })
-        {Text("Нет")}},
+        {Text(stringResource(R.string.no), fontFamily = HeadingFont)}},
         title = {Text(
-            "Получение данных"
+            stringResource(R.string.receive_data),
+            fontFamily = HeadingFont
         )},
-        text = {Text("Вам хотят отправить файл. Принять?")},
+        text = {Text(stringResource(R.string.receive_data_confirm), fontFamily = HeadingFont)},
+        containerColor = colorResource(R.color.background)
     )
 }
 
@@ -88,7 +93,7 @@ fun ReceiveDataDialog(onDismiss: () -> Unit){
                         sendingData.saveFile()
                     }
                 })
-                { Text("Сохранить файл") }
+                { Text(stringResource(R.string.save_file), fontFamily = HeadingFont) }
             }
         },
         dismissButton = {
@@ -98,12 +103,24 @@ fun ReceiveDataDialog(onDismiss: () -> Unit){
                         sendingData.saveFile()
                     }
                 })
-                { Text("Отмена") }
+                { Text(stringResource(R.string.cancel), fontFamily = HeadingFont) }
             }
         },
-        title = {Text(
-            if(sendingData.downloadingInProcess)"Получение данных" else "Файл загружен"
-        )},
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(painter =
+                if(sendingData.downloadingInProcess)
+                    painterResource(R.drawable.baseline_download_24)
+                else
+                    painterResource(R.drawable.baseline_download_done_24),
+                    contentDescription = "download")
+                Spacer(Modifier.width(15.dp))
+                Text(
+                    if (sendingData.downloadingInProcess) stringResource(R.string.downloading) else stringResource(
+                        R.string.loading_ready
+                    ), fontFamily = HeadingFont
+                )
+            }},
         text = {
             Column(
                 modifier = Modifier.fillMaxWidth(),
@@ -118,115 +135,14 @@ fun ReceiveDataDialog(onDismiss: () -> Unit){
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Имя файла: ${sendingData.filename}")
-                if(!sendingData.downloadingInProcess)Text("Размер файла в байтах: ${sendingData.byteArray.sumOf{it.size}}")
-                Text("Всего пакетов: ${sendingData.allPackages}")
-                Text("Количество принятых: ${sendingData.sentPackages}")
+                Text(stringResource(R.string.filename)+" " + sendingData.filename, fontFamily = HeadingFont)
+                if(!sendingData.downloadingInProcess)Text(stringResource(R.string.filesize)+" " + sendingData.byteArray.sumOf{it.size}, fontFamily = HeadingFont)
+                Text(stringResource(R.string.package_count)+" " + sendingData.allPackages, fontFamily = HeadingFont)
+                Text(stringResource(R.string.receive_package_count)+" " + sendingData.sentPackages, fontFamily = HeadingFont)
             }
-        }
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ReceiveDataScreen(navController: NavController){
-    val snackbarHostState = remember { SnackbarHostState() }
-    BackHandler(enabled = true) {  }
-
-    Scaffold(modifier = Modifier.fillMaxSize(),
-        topBar = {
-            TopAppBar(
-                title = {
-//                    Text(
-//                        text = stringResource(R.string.greeting_text),
-//                        fontFamily = HeadingFont,
-//                        color = colorResource(R.color.white_button),
-//                        fontSize = 7.em,
-//                        fontWeight = FontWeight.Thin
-//                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = colorResource(R.color.blue_button)),
-                navigationIcon = {
-                    IconButton(onClick = {
-                        if(!sendingData.downloadingInProcess) {
-                            navController.navigate(Routes.Send.route) {
-                                popUpTo(navController.graph.startDestinationId)
-                                launchSingleTop = true
-                            }
-                        }
-                    }) {
-                        Icon(painter = painterResource(R.drawable.baseline_arrow_back_24),
-                            contentDescription = "Back",
-                            tint = Color.White)
-                    }
-                }
-            )
         },
-        snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState)
-        }
-    ) { innerPadding ->
-        Column(
-            Modifier
-                .fillMaxSize()
-                .padding(15.dp)
-                .padding(innerPadding),
-            horizontalAlignment = Alignment.Start
-        ) {
-            Spacer(Modifier.height(20.dp))
-            Text(
-                text = if (sendingData.downloadingInProcess) "Принимаем файл..." else "Загружено",
-                fontSize = 9.em,
-                fontFamily = HeadingFont,
-                color = colorResource(R.color.grey_text)
-            )
-            Spacer(Modifier.height(20.dp))
-            Text(text = "Имя файла: ${sendingData.filename}" ,
-                fontSize = 5.em,
-                fontFamily = HeadingFont,
-                color = colorResource(R.color.grey_text))
-            Spacer(Modifier.height(20.dp))
-            Text(text = "Размер файла: ${sendingData.byteArray.sumOf { it.size }} байт",
-                fontSize = 5.em,
-                fontFamily = HeadingFont,
-                color = colorResource(R.color.grey_text))
-            Spacer(Modifier.height(20.dp))
-            Text(text = "Количество пакетов: ${sendingData.allPackages}",
-                fontSize = 5.em,
-                fontFamily = HeadingFont,
-                color = colorResource(R.color.grey_text))
-            Spacer(Modifier.height(20.dp))
-            Text(text = "Принято пакетов: ${sendingData.sentPackages}",
-                fontSize = 5.em,
-                fontFamily = HeadingFont,
-                color = colorResource(R.color.grey_text))
-            Spacer(Modifier.height(30.dp))
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (sendingData.downloadingInProcess) {
-                        CircularProgressIndicator(modifier = Modifier.size(40.dp, 40.dp), color = colorResource(R.color.blue_button))
-                    } else {
-
-                    }
-                }
-                Box(contentAlignment = Alignment.BottomCenter, modifier = Modifier.fillMaxSize()) {
-
-                    Button(onClick = {
-                        sendingData.saveFile()
-                    },
-                        colors = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.blue_button)),
-                        modifier = Modifier.fillMaxWidth()) {
-                        Text(text = "Сохранить",
-                            fontFamily = HeadingFont,
-                            fontSize = 4.em)
-                    }
-                }
-
-
-        }
-    }
+        containerColor = colorResource(R.color.background)
+    )
 }
 
 @Preview
@@ -234,4 +150,5 @@ fun ReceiveDataScreen(navController: NavController){
 fun ReceiveDataAD(){
     var showRDAL by remember { mutableStateOf(false) }
     ReceiveDataDialog({showRDAL = false})
+
 }

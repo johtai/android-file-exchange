@@ -10,9 +10,11 @@
     <string name="num_of_port">Номер порта</string>
     <string name="choose_file">Выбрать файл</string>
     <string name="choosing_file">Выбранный файл: </string>
-    <string name="close">Закрыть</string>
     <string name="whom">Имя получателя</string>
     <string name="input_username">Имя пользователя</string>
+    <string name="logout">Выход</string>
+    <string name="logout_confirm">Вы уверены что хотите выйти?</string>
+    <string name="to_logout">Выйти</string>
 
     //Вход
     <string name="login_head_text">Войдите в аккаунт</string>
@@ -20,6 +22,7 @@
     <string name="password_mes">Пароль</string>
     <string name="to_enter">Войти</string>
     <string name="to_regist">Зарегистрироваться</string>
+    <string name="login_loading">Вход...</string>
 
     //Регистрация
     <string name="regist_head_text">Регистрация</string>
@@ -30,4 +33,26 @@
     <string name="not_match_pass">Не соответствуют пароли</string>
     <string name="success_regist_mes">Пользователь успещно зарегистрирован</string>
     <string name="requir_mes">Обязательно</string>
+    <string name="register_loading">Регистрируем вас...</string>
+
+    //экран загрузки
+    <string name="downloading">Загружаем файл...</string>
+    <string name="filename">Имя файла: </string>
+    <string name="filesize">Размер файла в байтах: </string>
+    <string name="package_count">Количество пакетов: </string>
+    <string name="sent_package_count">Отправлено пакетов: </string>
+    <string name="resent_package_count">Повторно отправлено: </string>
+    <string name="loading_ready">Готово</string>
+    <string name="save_file">Сохранить файл</string>
+    <string name="sent_file_loading">Отправляем...</string>
+    <string name="receive_package_count">Принято пакетов: </string>
+    <string name="receive_data">Принятие данных</string>
+    <string name="receive_data_confirm">Вам хотят отправить файл. Принять?</string>
+
+    //Другое
+    <string name="close">Закрыть</string>
+    <string name="cancel">Отмена</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
+
 </resources>

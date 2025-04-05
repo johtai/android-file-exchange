@@ -36,7 +36,7 @@ object sendingData {
     var resentPackages by mutableIntStateOf(0)
     var ip by mutableStateOf("5.165.249.136")
     var port by mutableIntStateOf(2869)
-    var downloadingInProcess by mutableStateOf(false)
+    var downloadingInProcess by mutableStateOf(true)
     var receiveDataConfirm by mutableStateOf(false)
 
     fun setData (context: Context, uri: Uri) {
@@ -246,7 +246,6 @@ object sendingData {
                 break
             }
         }
-
         println("File name received: $filename")
 
         val messageCount:String
