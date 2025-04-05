@@ -19,11 +19,9 @@ data class UserSession(val name:String, val count: Int)
 fun Application.configureAuth()
 {
 
-
     var secret = environment.config.property("jwt.secret").getString()
     var issuer = environment.config.property("jwt.issuer").getString()
     var audience = environment.config.property("jwt.audience").getString()
-
 
 
     install(Sessions){
@@ -31,7 +29,6 @@ fun Application.configureAuth()
             cookie.path = "/"
             cookie.maxAgeInSeconds = 60
         }
-
     }
 
     var myRealm = environment.config.property("jwt.realm").getString()
@@ -53,8 +50,6 @@ fun Application.configureAuth()
 //        }
 
 
-
-
         jwt("auth-jwt") {
             realm = myRealm
             verifier(JWT
@@ -73,8 +68,6 @@ fun Application.configureAuth()
                 call.respond(HttpStatusCode.Unauthorized, "Token is not valid or has expired")
             }
         }
-
-
 
 
 //        digest("auth-digest") {

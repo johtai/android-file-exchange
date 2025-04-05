@@ -135,7 +135,8 @@ suspend fun handleClient(clientId: String, clientState: ClientState, data: Strin
 
                 println("size Recived packets: ${clientState.receivedPackets.size} ")
                 println("messageCount: ${clientState.messageCount} ")
-                // Проверяем, все ли пакеты получены
+
+                // ---------Проверяем, все ли пакеты получены-----------
                 if (clientState.receivedPackets.size == clientState.messageCount) {
                     println("Client $clientId: All packets received")
                     // Обработка завершена
@@ -145,10 +146,16 @@ suspend fun handleClient(clientId: String, clientState: ClientState, data: Strin
                     messageChannel.send(Json.encodeToString(message))
                     println("After message channel")
 
+                    //Получение пакета адреса
+                    // var packAddress: SocketAddress
 
                     var pack = serverSocket.receive()
-                    println(" packrec: ${pack.packet}")
+                    println(" packAddressDestination Recived: ${pack.packet.readString()}")
                     var packAddress = pack.address
+                    serverSocket.send(Datagram(packet = ByteReadPacket(
+                        "okey".encodeToByteArray()), address = pack.address))
+
+
                     while (true) {
 
                         serverSocket.send(
