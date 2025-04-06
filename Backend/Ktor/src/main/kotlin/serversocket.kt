@@ -8,6 +8,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.time.withTimeoutOrNull
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.io.Source
+import kotlinx.io.readByteArray
 import kotlinx.io.readString
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -39,15 +41,16 @@ fun Application.createSocket()
             try {
                 //Принимает новое подключение
                 val clientPacket = serverSocket.receive()
-                val clientIdData = clientPacket.packet.readString()
+                val clientIdData = clientPacket.packet//.readString()
                 val clientAddress = clientPacket.address
 
                 val clientId =  ClientManager.clients.entries.find{it.value.address == clientAddress}?.key
                 if (clientId == null)
                 {
                     // Новый клиент
-                    ClientManager.clients[clientIdData] = ClientState(clientAddress)
-                    println("New client connected: ${ClientManager.clients[clientIdData]} from $clientAddress")
+                    val eIdData = clientIdData.readString()
+                    ClientManager.clients[eIdData] = ClientState(clientAddress)
+                    println("New client connected: ${ClientManager.clients[eIdData]} from $clientAddress")
                 }
                 else{
                     // Существует клиент
@@ -71,16 +74,17 @@ fun toi(ba:ByteArray):Int
             (ba[0].toInt() and 0xff)
 }
 
-suspend fun handleClient(clientId: String, clientState: ClientState, data: String, serverSocket: BoundDatagramSocket) {
+suspend fun handleClient(clientId: String, clientState: ClientState, data: Source, serverSocket: BoundDatagramSocket) {
     try {
         when {
             clientState.recipientsName == null ->{
                 //Первый пакет - имя получателя
-                clientState.recipientsName = data
+                val dataRead = data.readString()
+                clientState.recipientsName = dataRead
                 println("recipient's name: $data")
                 serverSocket.send(
                     Datagram(
-                        packet = ByteReadPacket(array = data.encodeToByteArray()),
+                        packet = ByteReadPacket(array = dataRead.encodeToByteArray()),
                         address = clientState.address
                     )
                 )
@@ -89,11 +93,11 @@ suspend fun handleClient(clientId: String, clientState: ClientState, data: Strin
 
             clientState.fileName == null -> {
                 // Второй пакет — название файла
-                clientState.fileName = data
+                clientState.fileName = data.readString()
                 println("Client $clientId: File name received: ${clientState.fileName}")
                 serverSocket.send(
                     Datagram(
-                        packet = ByteReadPacket(array = data.encodeToByteArray()),
+                        packet = ByteReadPacket(array = clientState.fileName!!.encodeToByteArray()),
                         address = clientState.address
                     )
                 )
@@ -102,28 +106,30 @@ suspend fun handleClient(clientId: String, clientState: ClientState, data: Strin
             }
             clientState.messageCount == null -> {
                 // третий пакет — количество пакетов
-                clientState.messageCount = data.toInt()
+                clientState.messageCount = data.readString().toInt()
                 println("Client $clientId: Message count received: ${clientState.messageCount}")
                 serverSocket.send(
                     Datagram(
-                        packet = ByteReadPacket(array = data.encodeToByteArray()),
+                        packet = ByteReadPacket(array = clientState.messageCount!!.toString().encodeToByteArray()),
                         address = clientState.address
                     )
                 )
             }
             else -> {
                 // Последующие пакеты — данные
-                val numMessage = data.toByteArray()
-                if(numMessage.size < 4){
+                val numMessage = data.readByteArray(4) //.toByteArray()
+                if(numMessage .size < 4){
                     println("Client $clientId: Error - Invalid packet size")
                     return
                 }
+
+
                 val numOfPacket = (numMessage[3].toInt() shl 24) or
                         (numMessage[2].toInt() and 0xff shl 16) or
                         (numMessage[1].toInt() and 0xff shl 8) or
                         (numMessage[0].toInt() and 0xff)
 
-                val dataMessage = data.toByteArray()//.drop(4).toByteArray()
+                val dataMessage = data.readByteArray()//toByteArray().drop(4).toByteArray()
                 clientState.receivedPackets.add(dataMessage)
                 println("Client $clientId: Packet $numOfPacket received")
                 serverSocket.send(

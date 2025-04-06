@@ -18,5 +18,4 @@ fun Application.module() {
     configureHTTP()
     configureRouting(repository)
     createSocket()
-
 }

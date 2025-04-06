@@ -191,7 +191,7 @@ fun Application.configureRouting(repository: UserRepository)
             
             for(message in messageChannel){
                //val event = ServerSentEvent(event = "jsonevent", )
-               println("отправка message admin:  $message")
+               println("отправка message по sse:  $message")
                send(ServerSentEvent(event = "jsonEvent", data = message))
             }
 
