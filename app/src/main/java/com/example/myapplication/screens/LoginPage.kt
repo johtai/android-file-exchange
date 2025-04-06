@@ -75,7 +75,8 @@ fun LoginScreen(navController: NavController) {
         Text(text = stringResource(R.string.login_head_text),
             fontFamily = HeadingFont,
             color = colorResource(R.color.grey_text),
-            fontSize = 7.em)
+            fontSize = 7.em,
+            lineHeight = 1.em)
 
         Spacer(modifier = Modifier.height(20.dp))
         OutlinedTextField(
@@ -133,7 +134,7 @@ fun LoginScreen(navController: NavController) {
                                 )
                                 showDialog = false
                                 if (status == HttpStatusCode.OK) {
-                                    //if(true){
+                                //    if(true){
                                     TokenStorage.saveUser(username.value.text.trim())
                                     navController.navigate(Routes.Send.route) {
                                         popUpTo(navController.graph.startDestinationId)

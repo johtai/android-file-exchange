@@ -66,7 +66,7 @@ fun ConfirmReceiveDialog(onDismiss: () -> Unit){
             TextButton(onClick = {
                 scope.launch {
                     onDismiss()
-                    sendingData.sentRejection()
+                    //sendingData.sentRejection()
                 }
             })
         {Text(stringResource(R.string.no), fontFamily = HeadingFont)}},

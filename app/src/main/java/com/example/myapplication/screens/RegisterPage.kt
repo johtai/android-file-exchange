@@ -66,10 +66,10 @@ fun RegisterScreen(navController: NavController) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val name = remember {                                           //Lovak
-        mutableStateOf(TextFieldValue("Lovak2"))
+        mutableStateOf(TextFieldValue(""))
     }
-    val password = remember { mutableStateOf(TextFieldValue("BestUser03")) }    //BestUser03
-    val confirmPassword = remember { mutableStateOf(TextFieldValue("BestUser03")) }
+    val password = remember { mutableStateOf(TextFieldValue("")) }    //BestUser03
+    val confirmPassword = remember { mutableStateOf(TextFieldValue("")) }
 
     val nameErrorState = remember { mutableStateOf(false) }
     val passwordErrorState = remember { mutableStateOf(false) }

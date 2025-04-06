@@ -3,12 +3,10 @@ package com.example.myapplication.screens
 import android.content.Context
 import android.net.Uri
 import android.os.ParcelFileDescriptor
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +15,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -56,8 +57,6 @@ import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.MAX_FILE_SIZE
 import com.example.myapplication.R
 import com.example.myapplication.TokenStorage
-import com.example.myapplication.hello
-import com.example.myapplication.refreshToken
 import com.example.myapplication.sendingData
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import kotlinx.coroutines.CoroutineScope
@@ -98,7 +97,7 @@ fun FilePickerScreen(scope: CoroutineScope, snackbarHostState: SnackbarHostState
             onClick = {
                 filePickerLauncher.launch(arrayOf("*/*"))
             },
-            modifier = Modifier.size(200.dp, 50.dp),
+            modifier = Modifier.wrapContentSize(),
             ) {
             Text(
                 stringResource(R.string.choose_file),
@@ -165,17 +164,12 @@ fun SendingDataScreen(navController: NavController) {
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     var errorLogin = remember { mutableStateOf(false) }
-    var ipAddress by remember { mutableStateOf("5.165.249.136") }
-    var port by remember { mutableStateOf("2869") }
     var username by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
     var isFinished by remember { mutableStateOf(false) }
     var showLogoutConfirm by remember { mutableStateOf(false) }
-    BackHandler(enabled = true) {
-        if(!isFinished){
-
-        }
-    }
+    BackHandler(enabled = true) { }
+    val scrollState = rememberScrollState()
 
     Scaffold(modifier = Modifier.fillMaxSize(),
         containerColor = colorResource(R.color.background),
@@ -214,75 +208,43 @@ fun SendingDataScreen(navController: NavController) {
                 .padding(innerPadding),
             horizontalAlignment = Alignment.Start,
         ) {
-//            Text(text = TokenStorage.getUser().toString())
-//            Spacer(modifier = Modifier.height(5.dp))
+            Column(modifier = Modifier
+                .weight(1f) // Занимает всё доступное место
+                .verticalScroll(scrollState)) {
+                Text(
+                    stringResource(R.string.whom),
+                    fontSize = 9.em,
+                    lineHeight = 1.em,
+                    fontFamily = HeadingFont,
+                    color = colorResource(R.color.grey_text)
+                )
+                OutlinedTextField(
+                    value = username,
+                    onValueChange = {
+                        if (errorLogin.value)
+                            errorLogin.value = false
+                        username = it
+                    },
+                    label = { Text(stringResource(R.string.input_username)) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    isError = errorLogin.value
+                )
 
-            Text(
-                stringResource(R.string.whom),
-                fontSize = 9.em,
-                fontFamily = HeadingFont,
-                color = colorResource(R.color.grey_text)
-            )
-            OutlinedTextField(
-                value = username,
-                onValueChange = {
-                    if(errorLogin.value)
-                        errorLogin.value = false
-                    username = it },
-                label = { Text(stringResource(R.string.input_username)) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                isError = errorLogin.value
-            )
+                Spacer(modifier = Modifier.height(5.dp))
 
-            Spacer(modifier = Modifier.height(5.dp))
+                Text(
+                    stringResource(R.string.heading_file),
+                    fontFamily = HeadingFont,
+                    fontSize = 8.em,
+                    lineHeight = 1.em,
+                    color = colorResource(R.color.grey_text)
+                )
+                Spacer(modifier = Modifier.height(5.dp))
+                FilePickerScreen(scope, snackbarHostState)
 
-            Text(
-                stringResource(R.string.heading_file),
-                fontFamily = HeadingFont,
-                fontSize = 8.em,
-                lineHeight = 1.em,
-                color = colorResource(R.color.grey_text)
-            )
-            Spacer(modifier = Modifier.height(5.dp))
-            FilePickerScreen(scope, snackbarHostState)
-
-
-//            Button(onClick = {
-//                scope.launch {
-//                    val res = hello()
-//                    println(res.description)
-//                }
-//            },)
-//            {
-//                Text("/hello")
-//            }
-//            Button(onClick = {
-//                scope.launch {
-//                    val res = refreshToken()
-//                }
-//            },)
-//            {
-//                Text("/refresh")
-//            }
-//            Button(onClick = {
-//                scope.launch {
-//                    navController.navigate(Routes.Receive.route){
-//                        popUpTo(navController.graph.startDestinationId)
-//                        launchSingleTop = true
-//                    }
-//                }
-//            },)
-//            {
-//                Text("GO!!")
-//            }
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                contentAlignment = Alignment.BottomCenter
-            ) {
+            }
                 Button(                             //самая главная кнопка "отправить"
                     onClick = {
                         if(username.trim().isEmpty()){
@@ -310,6 +272,7 @@ fun SendingDataScreen(navController: NavController) {
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.blue_button)),
                     modifier = Modifier.fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
                 ) {
                     Text(
                         stringResource(R.string.Send_data),
@@ -317,7 +280,7 @@ fun SendingDataScreen(navController: NavController) {
                         fontSize = 4.em
                     )
                 }
-            }
+
         }
 
     }
@@ -331,8 +294,8 @@ fun SendingDataScreen(navController: NavController) {
         LogoutConfirm(navController, {showLogoutConfirm = false})
     }
 
-    if(sendingData.receiveDataConfirm){
-        ReceiveDataDialog(LocalContext.current, {sendingData.receiveDataConfirm = false})
+    if(sendingData.receiveDataDialog){
+        ReceiveDataDialog(LocalContext.current, {sendingData.receiveDataDialog = false})
     }
 
 
@@ -343,7 +306,7 @@ fun SendingDataScreen(navController: NavController) {
 @Composable
 fun SendPreview() {
     MyApplicationTheme {
-        LogoutConfirm(rememberNavController()) { }
-        //SendingDataScreen(rememberNavController())
+        //LogoutConfirm(rememberNavController()) { }
+        SendingDataScreen(rememberNavController())
     }
 }

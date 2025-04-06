@@ -3,12 +3,10 @@ package com.example.myapplication
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
-import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
 import io.ktor.network.selector.SelectorManager
 import io.ktor.network.sockets.Datagram
@@ -18,8 +16,6 @@ import io.ktor.utils.io.core.ByteReadPacket
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import kotlinx.io.readByteArray
 import kotlinx.io.readString
@@ -37,7 +33,7 @@ object sendingData {
     var ip by mutableStateOf("5.165.249.136")
     var port by mutableIntStateOf(2869)
     var downloadingInProcess by mutableStateOf(true)
-    var receiveDataConfirm by mutableStateOf(false)
+    var receiveDataDialog by mutableStateOf(false)
 
     fun setData (context: Context, uri: Uri) {
         try {
@@ -333,7 +329,7 @@ object sendingData {
         }
         socket.close()
         byteArray = listBytes
-        downloadingInProcess = true
+        downloadingInProcess = false
         //saveFile(filename, listBytes)
 
     }
@@ -377,7 +373,4 @@ object sendingData {
         //File(filename).writeBytes(file);
     }
 
-    suspend fun sentRejection() {
-
-    }
 }
